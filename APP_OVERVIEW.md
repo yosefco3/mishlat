@@ -96,7 +96,7 @@ live registry + /proc ────┤        model.build_index ─▶ ~/.cache/m
 - Refresh: file monitors (coalesced to one scan per 2 s), a 30 s timer for the time-based states,
   the Nemo extension re-reads the index every 5 s when its mtime changed.
 - Cleanup list (`model.mark_cleanup`, every scan): reason in priority order gone > no_transcript >
-  duplicate > empty > old (30 days, `settings.old_days`); exempt: starred, active states, assigned,
+  duplicate > empty > old (30 days, `settings.old_days`, set in the ⚙ dialog); exempt: starred, active states, assigned,
   kept (`keep.json`), the newest session of each folder. "מחק" writes `delete-requests.json`; a
   Claude session runs `mishlat cleanup --json` and deletes through the app; the scan prunes
   requests of sessions that are gone.
@@ -114,4 +114,5 @@ live registry + /proc ────┤        model.build_index ─▶ ~/.cache/m
 | 2026-10-19 | Folder purpose line on cards: README first heading + paragraph, or the user's text (`descriptions.json`); "תאר את התיקייה…" can write a README once | `mishlat/describe.py`, `mishlat/window.py` |
 | 2026-10-19 | Open source: English UI with a Hebrew switch (`strings.py`, Ctrl+L), Nemo + Nautilus extension, AppIndicator fallback, GNOME hotkey, demo home + screenshots, scrubbed specs, MIT | `mishlat/strings.py`, `extension/`, `install.sh`, `scripts/` |
 | 2026-10-19 | 0.1.1: folder identity memory; a renamed or moved folder (also into a repository) keeps its sessions; a deleted one stays "gone" | `mishlat/folders.py`, `mishlat/gitinfo.py`, `mishlat/scan.py`, `mishlat/model.py` |
+| 2026-10-19 | 0.1.3: settings dialog (⚙, Ctrl+,) for notifications and the old-days threshold; `settings.notify` = others (default: never about the session the user looks at, by `lastFocusedAt`) / all / off | `mishlat/window.py`, `mishlat/tray.py`, `mishlat/model.py`, `mishlat/store.py`, `mishlat/index.py` |
 | 2026-10-19 | 0.1.2: `claude agents --json` is the primary live source (busy / waiting / idle → working / waiting / open, `waitingFor` shown); the registry + `/proc` reader is the fallback; `index.live_source`; the demo home fakes the listing | `mishlat/agents.py`, `mishlat/scan.py`, `mishlat/model.py`, `mishlat/view.py`, `scripts/demo_home.py` |

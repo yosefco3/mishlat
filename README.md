@@ -34,6 +34,9 @@ keep on your disk. It never writes into their files and never sends anything any
 - **A purpose line per folder** from its `README.md`, so an archive does not look like a live
   project; or write your own from the card's menu.
 - English or Hebrew UI (right-to-left), Ctrl+L to switch; Ctrl+= / Ctrl+- for the text size.
+- **Settings** (⚙ or Ctrl+,): desktop notifications for every waiting session except the one
+  you are looking at (the default), for all of them, or off; and after how many days a session
+  counts as old.
 
 | Search | Cleanup list (Hebrew UI) |
 |---|---|
@@ -78,6 +81,7 @@ python3 -m mishlat
 | Move a session to another project | right-click ▸ *Assign to a project…* |
 | Describe a folder | right-click the card ▸ *Describe the folder…* (optionally written as its README) |
 | Language, text size | Ctrl+L; Ctrl+= / Ctrl+- / Ctrl+0 |
+| Notifications, old days | ⚙ in the header, or Ctrl+, |
 | Without the GUI | `mishlat scan` (summary), `mishlat scan --json` (the whole index), `mishlat cleanup` |
 
 **Running the deletions.** Mishlat only approves: the ids wait in
@@ -134,8 +138,12 @@ folder when you ask for it from the card's menu, and only if the folder has none
 `settings.json`:
 
 ```json
-{"roots": ["~/Desktop", "~/work"], "old_days": 30, "font_px": 15, "lang": "en"}
+{"roots": ["~/Desktop", "~/work"], "old_days": 30, "font_px": 15, "lang": "en", "notify": "others"}
 ```
+
+`notify`: `others` (every waiting or review session except the one you last looked at in the app,
+which the app announces itself), `all`, or `off` (the panel badge stays). The settings dialog
+writes `notify` and `old_days`; the shortcuts write `font_px` and `lang`.
 
 ## The plugin
 
