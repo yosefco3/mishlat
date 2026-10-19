@@ -1,6 +1,6 @@
 # Test Coverage Graph
 
-_נוצר אוטומטית ב: 2026-10-19 21:17_
+_נוצר אוטומטית ב: 2026-10-19 21:37_
 
 ## סיכום / Summary
 
@@ -9,8 +9,8 @@ _נוצר אוטומטית ב: 2026-10-19 21:17_
 | קבצי קוד / source files | 21 |
 | מכוסים / covered | 20 |
 | ללא טסט / uncovered | 1 |
-| כיסוי / coverage | 95% ↑5% |
-| טסטים עוברים / passing | 105 ✅ |
+| כיסוי / coverage | 95% →0% |
+| טסטים עוברים / passing | 113 ✅ |
 | טסטים נכשלים / failing | 0 ❌ |
 
 ## מיפוי קוד → טסטים / Source → Tests
@@ -24,7 +24,9 @@ _נוצר אוטומטית ב: 2026-10-19 21:17_
 | `mishlat/cli.py` | `tests/test_scan.py` |
 | `mishlat/describe.py` | `tests/test_describe.py` |
 | `mishlat/folders.py` | `tests/test_folders.py` |
+| `mishlat/folders.py` | `tests/test_identity.py` |
 | `mishlat/gitinfo.py` | `tests/test_folders.py` |
+| `mishlat/gitinfo.py` | `tests/test_identity.py` |
 | `mishlat/index.py` | `tests/test_index_io.py` |
 | `mishlat/live.py` | `tests/test_live.py` |
 | `mishlat/model.py` | `tests/test_model_index.py` |
