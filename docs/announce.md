@@ -32,7 +32,33 @@ Repo: https://github.com/yosefco3/mishlat (v0.1.1)
 Caveat up front: it relies on undocumented files the desktop app keeps, so an app update can break
 a reader; the scanner then says what it could not read instead of showing nothing.
 
-## GitHub discussion for anthropics/claude-code (optional; ask for the stable interface, not the feature)
+## awesome-claude-code (submit it yourself, from 2026-11-02)
+
+The list (https://github.com/hesreallyhim/awesome-claude-code) takes recommendations only through
+its web issue form, filled in by a human; PRs and `gh`-made issues are closed. A resource must be
+14 days past its first commit on the default branch, with more commits after the first day, or
+have 100 stars. Mishlat's first public commit is 2026-10-19, so it is eligible from **2026-11-02**;
+keep committing in between.
+
+Form: https://github.com/hesreallyhim/awesome-claude-code/issues/new?template=recommend-resource.yml
+
+| Field | Value |
+|---|---|
+| Display Name | Mishlat |
+| Category | Observability & Monitoring > Session Monitors |
+| Link | https://github.com/yosefco3/mishlat |
+| Author Name | yosefco3 |
+| Author Link | https://github.com/yosefco3 |
+| Description | see below (431 characters) |
+
+> A GTK window for Linux that lists every project with its Claude Code sessions and their state (working, waiting for an answer, ready for review, stopped midway), with a panel badge, folder marks in Nemo and Nautilus, and a standing list of sessions worth deleting. Sessions are grouped by the project they worked in and follow a folder that is renamed or moved. Includes a Claude Code plugin with /projects, /needs-me and /cleanup.
+
+Checklist: tick all (you have seen the repo; links public; specific to Claude Code).
+
+## anthropics/claude-code (feature request issue; Discussions are disabled there)
+
+The repository has no Discussions tab, so there is no "Show and tell". What it does accept is a
+feature request in its issue tracker. Ask for the stable interface, not the feature:
 
 **Title:** A documented way to list sessions and their state (e.g. `claude sessions --json`)
 
