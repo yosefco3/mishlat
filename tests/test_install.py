@@ -11,7 +11,8 @@ class InstallTest(unittest.TestCase):
     def test_install_run_uninstall_in_a_temp_home(self):
         home = FakeHome()
         try:
-            env = dict(os.environ, HOME=home.root, MISHLAT_NO_RESTART="1", MISHLAT_NO_KEYBINDING="1", LC_ALL="C.UTF-8")
+            env = dict(os.environ, HOME=home.root, MISHLAT_NO_RESTART="1", MISHLAT_NO_KEYBINDING="1", LC_ALL="C.UTF-8",
+                       MISHLAT_AGENTS_DISABLE="1")
             env.pop("MISHLAT_HOME", None)
             env.pop("MISHLAT_LIB", None)
             out = subprocess.run([os.path.join(REPO, "install.sh")], env=env, capture_output=True, text=True)

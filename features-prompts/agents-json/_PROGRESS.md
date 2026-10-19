@@ -53,10 +53,10 @@ registry + `/proc` reader as the fallback, so nothing gets worse when the comman
    the "Needs you" list has a row ending with `— permission prompt`.
 5. `python3 -m pytest -q` ⇒ green; `python3 scripts/screenshot.py` ⇒ six PNGs rewritten.
 
-## ⏳ Pending (2/5 completed):
+## ⏳ Pending (3/5 completed):
 1. ✅ `01_parse.md` — `mishlat/agents.py`: `LiveEntry`, `parse_agents_json`, `read_agents` with a hard timeout, the env overrides; fixture + tests.
 2. ✅ `02_model.md` — `state_of` takes the CLI status; `waitingFor` as the row's question; `Live` carries status; tests.
-3. `03_scan.md` — the scan reads the listing first and falls back to the registry; `index["live_source"]`; the summary prints it; end-to-end tests.
+3. ✅ `03_scan.md` — the scan reads the listing first and falls back to the registry; `index["live_source"]`; the summary prints it; end-to-end tests.
 4. `04_demo.md` — the demo home fakes the listing (`_agents.json`), screenshots use it, the window translates `waitingFor`.
 5. `05_release.md` — README, APP_OVERVIEW, plugin docs, version 0.1.2, plugin sync, graphs, local install and a check against the real CLI.
 

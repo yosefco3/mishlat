@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 
+from . import agents
 from . import index as io
 from . import paths
 from .paths import version_key
@@ -36,9 +37,14 @@ def app_version(home: str) -> str | None:
 class Scanner:
     """Keeps the caches between scans. Use one Scanner from one thread at a time."""
 
-    def __init__(self, home: str, proc_root: str | None = None, clock=None, git_run=subprocess.run) -> None:
+    def __init__(self, home: str, proc_root: str | None = None, clock=None, git_run=subprocess.run,
+                 env=None) -> None:
+        """`env` (default `os.environ`) carries the overrides: MISHLAT_PROC_ROOT (a fake /proc for the
+        demo), MISHLAT_AGENTS_CMD (a command instead of the bundled CLI), MISHLAT_AGENTS_DISABLE=1."""
         self.home = home
-        self.proc_root = proc_root or os.environ.get("MISHLAT_PROC_ROOT") or "/proc"  # the override is for demos
+        self.env = os.environ if env is None else env
+        self.proc_root = proc_root or self.env.get("MISHLAT_PROC_ROOT") or "/proc"
+        self.agents_timeout = agents.TIMEOUT_S
         self.clock = clock or (lambda: int(time.time() * 1000))
         self.git_run = git_run
         self.store = StoreReader()
@@ -104,6 +110,12 @@ class Scanner:
             found.update(find_by_identity(roots, missing))  # a folder moved into a repository, or deeper
         return found
 
+    def read_agents(self) -> dict | None:
+        """`claude agents --json`, the primary live source; None when disabled. Any failure
+        raises AgentsError, which the scan reports as one error line before falling back."""
+        argv = agents.agents_command(self.home, self.env)
+        return agents.read_agents(argv, self.agents_timeout) if argv else None
+
     def git(self, path: str) -> dict | None:
         branch = read_branch(path)
         if branch is None:
@@ -131,7 +143,10 @@ class Scanner:
                            {"roots": paths.default_roots(self.home), "old_days": 30})
         records, store_errors = guarded("store", lambda: self.store.read(self.home), ([], []))
         errors.extend(store_errors)
-        live = guarded("live", lambda: read_live(self.home, self.proc_root), {})
+        live = guarded("agents", self.read_agents, None)
+        live_source = "agents" if live is not None else "registry"
+        if live is None:  # disabled, or the command failed: the registry + /proc, as before 0.1.2
+            live = guarded("live", lambda: read_live(self.home, self.proc_root), {})
         before = {p: (e["size"], e["mtime"]) for p, e in self.tx_cache.items()}
         transcripts = guarded("transcripts", lambda: index_transcripts(self.home, self.tx_cache), {})
         folders = guarded("folders", lambda: self.folders(settings["roots"]), FolderIndex([], settings["roots"]))
@@ -152,6 +167,7 @@ class Scanner:
         ids = {s["id"] for p in index["projects"] for s in p["sessions"]}
         guarded("prune requests", lambda: io.prune_delete_requests(self.home, ids), 0)
         index["errors"] = errors
+        index["live_source"] = live_source
         index["app_version"] = app_version(self.home)
         index["scan_ms"] = int((time.monotonic() - t0) * 1000)
         guarded("write index", lambda: io.write_index(self.home, index), None)
@@ -164,7 +180,8 @@ def main() -> int:
     index = Scanner(paths.default_home()).scan()
     t = index["totals"]
     print(f"projects {t['projects']} · sessions {t['sessions']} · attention {t['attention']} · "
-          f"working {t['working']} · scan {index['scan_ms']} ms · errors {len(index['errors'])}")
+          f"working {t['working']} · live source {index['live_source']} · scan {index['scan_ms']} ms · "
+          f"errors {len(index['errors'])}")
     for e in index["errors"]:
         print("  error:", e, file=sys.stderr)
     return 0

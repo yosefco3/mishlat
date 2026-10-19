@@ -39,7 +39,7 @@ class PluginTest(unittest.TestCase):
         try:
             w = home.make_repo("Desktop/w")
             home.add_record("local_a", w, cli_id="c1", title="Plugin run", status="blocked", question="Go?", last=10**13)
-            env = dict(os.environ, MISHLAT_HOME=home.root, LC_ALL="C.UTF-8")
+            env = dict(os.environ, MISHLAT_HOME=home.root, LC_ALL="C.UTF-8", MISHLAT_AGENTS_DISABLE="1")
             out = subprocess.run([sys.executable, os.path.join(PLUGIN, "lib", "mishlat_cli.py"), "scan", "--json"],
                                  env=env, capture_output=True, text=True, cwd="/")
             self.assertEqual(out.returncode, 0, out.stderr)

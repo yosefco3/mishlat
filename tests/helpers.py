@@ -88,6 +88,15 @@ class FakeHome:
         if alive:
             self.add_proc(pid, start)
 
+    # ── the CLI's listing (`claude agents --json`), faked as a file the command prints ──
+    def add_agents(self, *entries: dict) -> str:
+        """Writes the listing and returns the command for MISHLAT_AGENTS_CMD. An entry is
+        agent(cli_id, cwd, status=...), or any dict shaped like the real output."""
+        p = self.path("_agents.json")
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(list(entries), f, ensure_ascii=False)
+        return f"cat {p}"
+
     def add_proc(self, pid: int, start: str) -> None:
         d = os.path.join(self.proc, str(pid))
         os.makedirs(d, exist_ok=True)
@@ -113,3 +122,13 @@ def tool_result(text="ok") -> dict:
 def tool_use(name: str, inp: dict) -> dict:
     return {"type": "assistant", "message": {"role": "assistant", "content": [
         {"type": "tool_use", "id": "t1", "name": name, "input": inp}]}, "cwd": "/w"}
+
+
+def agent(cli_id: str, cwd: str, status: str = "busy", pid: int = 50_000, waiting_for: str | None = None,
+          name: str = "n", started_at: int = 0) -> dict:
+    """One interactive entry of `claude agents --json` (the shape of CLI 2.1.299)."""
+    entry = {"pid": pid, "cwd": cwd, "kind": "interactive", "startedAt": started_at, "sessionId": cli_id,
+             "name": name, "status": status}
+    if waiting_for:
+        entry["waitingFor"] = waiting_for
+    return entry

@@ -34,7 +34,8 @@ def summary(index: dict, home: str) -> str:
     t = index["totals"]
     when = time.strftime("%Y-%m-%d %H:%M", time.localtime(index["scanned_at"] / 1000))
     lines = [
-        f"Mishlat scan · {when} · {index['scan_ms']} ms · Claude Code {index.get('app_version') or '?'}",
+        f"Mishlat scan · {when} · {index['scan_ms']} ms · Claude Code {index.get('app_version') or '?'} · "
+        f"live source: {index.get('live_source') or '?'}",
         f"projects {t['projects']} · sessions {t['sessions']} · working {t['working']} · open {t['open']} · "
         f"stale {t['stale']} · gone folders (in כללי) {t['lost']}",
         f"attention {t['attention']}: waiting {t['waiting']} · review {t['review']} · stopped {t['stopped']} · "

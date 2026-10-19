@@ -315,7 +315,7 @@ def build_index(records, transcripts: dict, live: dict, folders: FolderIndex, no
         "stale": sum(1 for s in sessions if is_stale(s, now)),
     }
     return {
-        "version": INDEX_VERSION, "scanned_at": now, "scan_ms": 0, "app_version": None,
+        "version": INDEX_VERSION, "scanned_at": now, "scan_ms": 0, "app_version": None, "live_source": None,
         "roots": list(folders.roots), "projects": ordered, "attention": [s["id"] for s in attention],
         "totals": totals, "errors": [],
     }
