@@ -175,8 +175,11 @@ def prune_delete_requests(home: str, existing_ids: set[str]) -> int:
     return len(data) - len(kept)
 
 
+NOTIFY_MODES = ("others", "all", "off")  # others: every waiting session but the one the user looks at
+
+
 def load_settings(home: str) -> dict:
-    """{"roots": [...], "old_days": 30}: project roots, and the age of an "old" session."""
+    """{"roots": [...], "old_days": 30, "font_px": 15, "lang": "he", "notify": "others"}."""
     obj = read_json(paths.settings_path(home), {})
     obj = obj if isinstance(obj, dict) else {}
     roots = obj.get("roots")
@@ -193,7 +196,8 @@ def load_settings(home: str) -> dict:
     lang = obj.get("lang") if obj.get("lang") in LANGS else locale_lang()
     if os.environ.get("MISHLAT_LANG") in LANGS:  # a one-off override, for screenshots and trials
         lang = os.environ["MISHLAT_LANG"]
-    return {"roots": roots, "old_days": old_days, "font_px": font_px, "lang": lang}
+    notify = obj.get("notify") if obj.get("notify") in NOTIFY_MODES else NOTIFY_MODES[0]
+    return {"roots": roots, "old_days": old_days, "font_px": font_px, "lang": lang, "notify": notify}
 
 
 def save_setting(home: str, key: str, value) -> None:

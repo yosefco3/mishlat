@@ -49,6 +49,11 @@ class IndexIoTest(unittest.TestCase):
         self.assertEqual(io.load_settings(self.h)["roots"], [os.path.join(self.h, "Desktop")])
         io.write_json(paths.settings_path(self.h), {"roots": ["/srv/projects/"]})
         self.assertEqual(io.load_settings(self.h)["roots"], ["/srv/projects"])
+        self.assertEqual(io.load_settings(self.h)["notify"], "others")        # the default
+        io.save_setting(self.h, "notify", "off")
+        self.assertEqual(io.load_settings(self.h)["notify"], "off")
+        io.save_setting(self.h, "notify", "loud")
+        self.assertEqual(io.load_settings(self.h)["notify"], "others")        # unknown → default
 
 
 if __name__ == "__main__":
@@ -86,7 +91,8 @@ class CleanupFilesTest(unittest.TestCase):
         self.assertEqual(io.load_settings(self.h)["font_px"], io.FONT_DEFAULT)
         io.save_setting(self.h, "font_px", 18)
         self.assertEqual(io.load_settings(self.h),
-                         {"roots": [os.path.join(self.h, "Desktop")], "old_days": 30, "font_px": 18, "lang": "he"})
+                         {"roots": [os.path.join(self.h, "Desktop")], "old_days": 30, "font_px": 18, "lang": "he",
+                          "notify": "others"})
         io.save_setting(self.h, "lang", "en")
         self.assertEqual(io.load_settings(self.h)["lang"], "en")
         io.save_setting(self.h, "lang", "xx")

@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 
 from . import view
-from .model import attention_sessions
+from .model import attention_sessions, focused_session
 from .strings import t
 
 MENU_ROWS = 8
@@ -72,13 +72,17 @@ def notification_text(s: dict, names: dict[str, str]) -> tuple[str, str]:
     return title, body
 
 
-def to_notify(previous: dict | None, index: dict) -> list[dict]:
+def to_notify(previous: dict | None, index: dict, mode: str = "others") -> list[dict]:
     """The sessions to notify about: new attention entries in a notified state. None before the first
-    scan: the first index is the baseline (no burst of old questions at login)."""
+    scan: the first index is the baseline (no burst of old questions at login). `mode` is the
+    `notify` setting: "off" sends nothing; "others" skips the session the user is looking at in the
+    app (the app announces that one itself); "all" keeps it."""
     from .model import entered
-    if previous is None:
+    if previous is None or mode == "off":
         return []
-    return [s for s in entered(previous, index) if s["state"] in NOTIFY_STATES and not s.get("dismissed")]
+    skip = focused_session(index) if mode == "others" else None
+    return [s for s in entered(previous, index)
+            if s["state"] in NOTIFY_STATES and not s.get("dismissed") and s["id"] != skip]
 
 
 class _XAppIcon:

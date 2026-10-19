@@ -28,6 +28,7 @@ class Record:
     detail: str | None       # status_detail
     fresh: bool              # the summary belongs to the last turn
     turns: int | None = None  # completedTurns, when the app recorded it
+    last_focused: int = 0     # lastFocusedAt: when the user last looked at it in the app
 
 
 def _text(value: object) -> str | None:
@@ -66,6 +67,7 @@ def parse_record(obj: object) -> Record | None:
         fresh=fresh,
         turns=obj.get("completedTurns") if isinstance(obj.get("completedTurns"), int)
         and not isinstance(obj.get("completedTurns"), bool) else None,
+        last_focused=_ms(obj.get("lastFocusedAt")),
     )
 
 

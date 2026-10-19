@@ -189,6 +189,7 @@ def _session(rec, cli_id: str | None, tx: dict | None, live_entry, now: int, dis
         "starred": bool(rec and rec.starred),
         "dismissed": is_dismissed,
         "pid": live_entry.pid if alive else None,
+        "last_focused": rec.last_focused if rec else 0,
     }
     row["attention"] = (state in ATTENTION_STATES and not is_dismissed and now - last <= ATTENTION_DAYS * DAY_MS)
     return row
@@ -391,6 +392,12 @@ def attention_sessions(index: dict) -> list[dict]:
 
 def stale_sessions(index: dict, now: int, days: int = STALE_DAYS) -> list[dict]:
     return sorted((s for s in all_sessions(index) if is_stale(s, now, days)), key=lambda s: -s["last_activity"])
+
+
+def focused_session(index: dict | None) -> str | None:
+    """The session the user last looked at in the app: the greatest lastFocusedAt, if any."""
+    best = max(all_sessions(index or {}), key=lambda s: s.get("last_focused", 0), default=None)
+    return best["id"] if best and best.get("last_focused", 0) > 0 else None
 
 
 def entered(old: dict | None, new: dict) -> list[dict]:

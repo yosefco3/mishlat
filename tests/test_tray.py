@@ -2,6 +2,7 @@ import unittest
 
 from mishlat.tray import (MENU_ROWS, badge_count, icon_file, menu_model, notification_text, to_notify,
                           tooltip)
+from mishlat.model import focused_session
 from tests.test_model_index import D, NOW, build, rec
 
 
@@ -41,6 +42,23 @@ class TrayModelTest(unittest.TestCase):
         self.assertEqual(to_notify(first, stopped), [])               # nothing new waits
         s = second["projects"][0]["sessions"][0]
         self.assertEqual(notification_text(s, {f"{D}/book": "book"}), ("book · שאלה 0", "מחכה לתשובה: Q0?"))
+
+    def test_notify_modes_and_the_focused_session(self):
+        book = f"{D}/book"
+        def idx(*focus):
+            recs = [rec("local_a", book, status="blocked", question="A?"),
+                    rec("local_b", book, status="blocked", question="B?")]
+            recs = [r.__class__(**{**r.__dict__, "last_focused": f}) for r, f in zip(recs, focus or (0, 0))]
+            return build(recs, existing={book})
+        base = build([], existing={book})
+        self.assertIsNone(focused_session(idx()))
+        self.assertEqual(focused_session(idx(5, 9)), "local_b")
+        both = idx(5, 9)
+        self.assertEqual(sorted(s["id"] for s in to_notify(base, both)), ["local_a"])          # default: others
+        self.assertEqual(sorted(s["id"] for s in to_notify(base, both, "others")), ["local_a"])
+        self.assertEqual(sorted(s["id"] for s in to_notify(base, both, "all")), ["local_a", "local_b"])
+        self.assertEqual(to_notify(base, both, "off"), [])
+        self.assertEqual(sorted(s["id"] for s in to_notify(base, idx())), ["local_a", "local_b"])  # nobody focused
 
 
 if __name__ == "__main__":

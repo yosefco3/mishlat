@@ -122,7 +122,7 @@ class MishlatApp(Gtk.Application):
             warn(f"scan failed: {result}")
             return
         index = result
-        notify = to_notify(self.previous, index)
+        notify = to_notify(self.previous, index, io.load_settings(self.home)["notify"])
         self.previous = self.index = index
         if self.tray is not None:
             self.tray.update(index, now_ms())

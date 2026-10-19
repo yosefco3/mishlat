@@ -32,6 +32,11 @@ class ParseRecordTest(unittest.TestCase):
         self.assertIsNone(parse_record({"sessionId": "local_a"}))
         self.assertIsNone(parse_record(["not", "a", "dict"]))
 
+    def test_last_focused(self):
+        self.assertEqual(parse_record(self.base(lastFocusedAt=777)).last_focused, 777)
+        self.assertEqual(parse_record(self.base()).last_focused, 0)
+        self.assertEqual(parse_record(self.base(lastFocusedAt="soon")).last_focused, 0)
+
     def test_turns(self):
         self.assertEqual(parse_record(self.base(completedTurns=7)).turns, 7)
         self.assertIsNone(parse_record(self.base(completedTurns=True)).turns)
