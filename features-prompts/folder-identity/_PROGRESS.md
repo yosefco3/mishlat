@@ -39,7 +39,7 @@ exists, and finds it again by that identity after a rename or a move.
    card follows with all its sessions and the note "moved from …"; rename it back ⇒ same.
 4. https://github.com/yosefco3/mishlat/releases/tag/v0.1.1 exists.
 
-## ⏳ Pending (2/3 completed):
+## ✅ Pending (3/3 completed):
 1. ✅ `01_identity.md` — identity capture (`folders.py`, `gitinfo.remote_url`), the memory file, scan wiring.
 2. ✅ `02_resolve.md` — resolution by identity and remote, the deeper search, tests.
-3. `03_release.md` — docs, version 0.1.1, plugin sync, install, push, tag, release.
+3. ✅ `03_release.md` — docs, version 0.1.1, plugin sync, install, push, tag, release.

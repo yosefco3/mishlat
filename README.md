@@ -93,10 +93,13 @@ says the session is blocked on you · *review*: that summary says the turn ended
 to review · *stopped*: the user interrupted a turn with a task-list step still in progress ·
 *idle*: everything else.
 
-**The project of a session.** First the folder it ran in, with moved folders followed through
-their transcripts. Then the work: 3 × files written + files read, per project; the top project
-wins when it has 15 points or more and more than twice the start folder's. A manual assignment
-wins over both.
+**The project of a session.** First the folder it ran in. A folder that was renamed or moved is
+found again by its remembered identity: at every scan Mishlat notes each known folder's inode, its
+git remote and a sample of its file names; after a rename or a move (also into another folder or
+a repository) the folder with the same inode and files, or the same remote, is it. A deleted folder
+stays deleted: its sessions go under *General* and are offered for deletion. Then the work: 3 ×
+files written + files read, per project; the top project wins when it has 15 points or more and
+more than twice the start folder's. A manual assignment wins over both.
 
 **Project cards** show the folder's branch and whether it is dirty, counts per state, the newest
 sessions, and a purpose line from `README.md`.
@@ -110,7 +113,8 @@ the folders under your roots (3 levels, default `~/Desktop`), and `.git/HEAD` pl
 project repositories.
 
 Writes only its own files, private (mode 0600): `~/.cache/mishlat/index.json` (the index every
-part reads) and `transcripts.json` (the incremental-read cache); in `~/.config/mishlat/`:
+part reads), `transcripts.json` (the incremental-read cache) and `folders.json` (the identity of
+every folder it has seen, kept after the folder vanishes); in `~/.config/mishlat/`:
 `settings.json`, `assignments.json`, `dismissed.json`, `keep.json`, `delete-requests.json`,
 `descriptions.json`, `aliases.json`. The one exception is a `README.md` written into a project
 folder when you ask for it from the card's menu, and only if the folder has none.

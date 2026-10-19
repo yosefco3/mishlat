@@ -93,7 +93,7 @@ class CliTest(unittest.TestCase):
                           cli.summary(scratch, home.root))
             with contextlib.redirect_stdout(stdio.StringIO()) as v:
                 cli.main(["mishlat", "--version"])
-            self.assertIn("mishlat 0.1.0", v.getvalue())
+            self.assertIn("mishlat 0.1.1", v.getvalue())
             # cleanup: nothing approved, then two approved
             from mishlat import index as io
             with contextlib.redirect_stdout(stdio.StringIO()) as c0:

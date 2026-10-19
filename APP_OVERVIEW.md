@@ -37,7 +37,7 @@ live registry + /proc ────┤        store · live · transcripts · fol
 | `store.py` | the app's session records → `Record`; (mtime, size) cache (the store is 42 MB) |
 | `live.py` | `~/.claude/sessions/<pid>.json` + `/proc/<pid>/stat` start time → live processes |
 | `transcripts.py` | transcripts by session id, read incrementally: titles, first prompt, task list, interruption |
-| `folders.py`, `gitinfo.py` | folders under the roots (encoding and name lookups), branch and dirty state |
+| `folders.py`, `gitinfo.py` | folders under the roots (encoding, name and identity lookups), a folder's identity (inode, git remote, entry names), the deep search for moved folders; branch, dirty state, remote URL |
 | `model.py` | project resolution (moved folders), the six states, `build_index`, search, attention, `entered` |
 | `index.py` | atomic private JSON files: index, cache, aliases, dismissed, settings |
 | `scan.py` | `Scanner`: one guarded scan; each failing source becomes one line in `errors` |
@@ -71,9 +71,13 @@ live registry + /proc ────┤        store · live · transcripts · fol
   with a task step in progress) > waiting (the app's post-turn summary for the last turn is
   `blocked`) > review (`review_ready`) > open (alive) > idle.
 - Project of a session: scratch folding; the folder exists (unless the transcript folder says the
-  history moved: a reused name); `aliases.json`; the transcript folder's encoding; a unique folder
-  with the same name; a move learned from sibling sessions; else "כללי" (a folder that no longer
-  exists, or an app scratch folder). "כללי" is always the last card.
+  history moved: a reused name); the folder found again by its remembered identity
+  (`~/.cache/mishlat/folders.json`: inode + git remote + entry names, recorded at every scan; an
+  inode match needs agreeing remotes and a shared entry name, so a recycled inode does not fool
+  it; a deep search covers a folder moved into a repository); `aliases.json`; the transcript
+  folder's encoding; a unique folder with the same name; a move learned from sibling sessions;
+  else "כללי" (a folder that no longer exists, or an app scratch folder). "כללי" is always the
+  last card.
 - Then the work decides: score = 3 × writes + reads per project (paths in the tool calls, recorded
   incrementally by `transcripts.work_of`; a write with no path counts for the start folder). The top
   project wins with ≥ 15 and more than twice the start folder's score; `started_in` keeps the start.
@@ -100,3 +104,4 @@ live registry + /proc ────┤        store · live · transcripts · fol
 | 2026-10-19 | UI polish: session rows are links (hand cursor, underline, "פתח ↗"), base font 15 px with Ctrl+=/−/0 saved as `settings.font_px`, card edge colored by state | `mishlat/window.py`, `mishlat/index.py` |
 | 2026-10-19 | Folder purpose line on cards: README first heading + paragraph, or the user's text (`descriptions.json`); "תאר את התיקייה…" can write a README once | `mishlat/describe.py`, `mishlat/window.py` |
 | 2026-10-19 | Open source: English UI with a Hebrew switch (`strings.py`, Ctrl+L), Nemo + Nautilus extension, AppIndicator fallback, GNOME hotkey, demo home + screenshots, scrubbed specs, MIT | `mishlat/strings.py`, `extension/`, `install.sh`, `scripts/` |
+| 2026-10-19 | 0.1.1: folder identity memory; a renamed or moved folder (also into a repository) keeps its sessions; a deleted one stays "gone" | `mishlat/folders.py`, `mishlat/gitinfo.py`, `mishlat/scan.py`, `mishlat/model.py` |
