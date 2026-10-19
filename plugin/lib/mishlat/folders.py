@@ -85,6 +85,41 @@ class FolderIndex:
         return [f for f in self.folders if f.is_repo]
 
 
+def find_by_identity(roots: list[str], wanted: dict[str, dict], depth: int = 6) -> dict[str, str]:
+    """old path -> new path for the remembered folders found under the roots, descending into
+    repositories too (where the index does not). Used only while some remembered folder is lost."""
+    by_ino = {(w.get("dev"), w.get("ino")): old for old, w in wanted.items()}
+    remotes = {w["remote"]: old for old, w in wanted.items() if w.get("remote")}
+    found: dict[str, str] = {}
+    level = [r for r in roots if os.path.isdir(r)]
+    for _ in range(depth):
+        nxt: list[str] = []
+        for d in level:
+            try:
+                entries = list(os.scandir(d))
+            except OSError:
+                continue
+            for e in entries:
+                try:
+                    if not e.is_dir(follow_symlinks=False) or e.name.startswith(".") or e.name in SKIP:
+                        continue
+                    st = e.stat(follow_symlinks=False)
+                except OSError:
+                    continue
+                old = by_ino.get((st.st_dev, st.st_ino))
+                if old and old not in found and same_folder(wanted[old], e.path):
+                    found[old] = e.path
+                elif remotes and os.path.exists(os.path.join(e.path, ".git")):
+                    old = remotes.get(remote_url(e.path) or "")
+                    if old and old not in found and same_folder(wanted[old], e.path):
+                        found[old] = e.path
+                nxt.append(e.path)
+        level = nxt
+        if len(found) == len(wanted):
+            break
+    return found
+
+
 def folder_index(roots: list[str], depth: int = 3) -> FolderIndex:
     """Breadth-first to `depth` levels. A git repository is recorded and not descended into."""
     folders: list[Folder] = []

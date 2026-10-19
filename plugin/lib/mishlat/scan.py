@@ -13,7 +13,7 @@ from . import index as io
 from . import paths
 from .paths import version_key
 from .describe import ReadmeCache
-from .folders import FolderIndex, folder_index, identity
+from .folders import FolderIndex, find_by_identity, folder_index, identity
 from .gitinfo import is_dirty, read_branch
 from .live import read_live
 from .model import build_index, mark_cleanup
@@ -77,6 +77,33 @@ class Scanner:
         if changed:
             io.save_folder_memory(self.home, self.folder_memory)
 
+    def find_moved(self, folders: FolderIndex, records, roots: list[str]) -> dict[str, str]:
+        """old path -> where it is now, for every session folder that vanished but is remembered."""
+        lost: dict[str, dict] = {}
+        for r in records:
+            if not r.cwd:
+                continue
+            path = r.cwd.rstrip("/")
+            i = path.find("/.claude/worktrees/")
+            if i >= 0:
+                path = path[:i]
+            if os.path.isdir(path) or path in lost:
+                continue
+            remembered = self.folder_memory.get(path)
+            if remembered:
+                lost[path] = remembered
+        if not lost:
+            return {}
+        found = {}
+        for old, w in lost.items():
+            new = folders.by_identity(w)
+            if new:
+                found[old] = new
+        missing = {old: w for old, w in lost.items() if old not in found}
+        if missing:
+            found.update(find_by_identity(roots, missing))  # a folder moved into a repository, or deeper
+        return found
+
     def git(self, path: str) -> dict | None:
         branch = read_branch(path)
         if branch is None:
@@ -109,13 +136,15 @@ class Scanner:
         transcripts = guarded("transcripts", lambda: index_transcripts(self.home, self.tx_cache), {})
         folders = guarded("folders", lambda: self.folders(settings["roots"]), FolderIndex([], settings["roots"]))
         guarded("folder memory", lambda: self.remember(folders, records), None)
+        found = guarded("find moved", lambda: self.find_moved(folders, records, settings["roots"]), {})
         aliases = guarded("aliases", lambda: io.load_aliases(self.home), {})
         dismissed = guarded("dismissed", lambda: io.load_dismissed(self.home), {})
         assignments = guarded("assignments", lambda: io.load_assignments(self.home), {})
         descriptions = guarded("descriptions", lambda: io.load_descriptions(self.home), {})
         index = guarded("model", lambda: build_index(records, transcripts, live, folders, now, aliases, dismissed,
                                                      self.git, assignments=assignments,
-                                                     describe=self.readmes.purpose, descriptions=descriptions), None)
+                                                     describe=self.readmes.purpose, descriptions=descriptions,
+                                                     found=found), None)
         if index is None:
             index = build_index([], {}, {}, FolderIndex([], settings["roots"]), now)
         kept = guarded("keep", lambda: io.load_keep(self.home), {})

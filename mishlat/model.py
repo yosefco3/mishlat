@@ -35,12 +35,17 @@ def fold_worktree(path: str) -> str:
 
 
 def resolve_project(cwd: str, folders: FolderIndex, tx_folder: str | None = None,
-                    aliases: dict[str, str] | None = None, isdir=os.path.isdir) -> ProjectRef:
-    """In order: scratch; the folder exists (unless its transcripts moved elsewhere); a user alias;
-    the transcript folder's encoding; a unique folder with the same name; else lost."""
+                    aliases: dict[str, str] | None = None, isdir=os.path.isdir,
+                    found: dict[str, str] | None = None) -> ProjectRef:
+    """In order: scratch; the folder exists (unless its transcripts moved elsewhere); the folder found
+    again by its remembered identity (`found`: old path -> new path, after a rename or a move); a
+    user alias; the transcript folder's encoding; a unique folder with the same name; else lost."""
     path = fold_worktree(os.path.normpath(cwd)) if cwd else "/"
     if "/scratch-workspaces/" in path:
         return ProjectRef(SCRATCH, None, None)
+    again = (found or {}).get(path)
+    if not isdir(path) and again and isdir(again):
+        return ProjectRef(again, again, path)
     if isdir(path):
         # The folder name may have been reused (an old project folder became a parent folder);
         # the transcript folder then still names where the session's history lives now.
@@ -180,9 +185,10 @@ def _session(rec, cli_id: str | None, tx: dict | None, live_entry, now: int, dis
 def build_index(records, transcripts: dict, live: dict, folders: FolderIndex, now: int,
                 aliases: dict | None = None, dismissed: dict | None = None, git=None,
                 isdir=os.path.isdir, assignments: dict | None = None, describe=None,
-                descriptions: dict | None = None) -> dict:
+                descriptions: dict | None = None, found: dict | None = None) -> dict:
     """Every session and project, as the dict written to `~/.cache/mishlat/index.json`.
-    `describe(path)` gives a folder's README purpose; `descriptions` the user's own lines."""
+    `describe(path)` gives a folder's README purpose; `descriptions` the user's own lines;
+    `found` maps the old path of a renamed or moved folder to where it is now."""
     aliases, dismissed, assignments = aliases or {}, dismissed or {}, assignments or {}
     descriptions = descriptions or {}
     describe = describe or (lambda path: None)
@@ -200,7 +206,7 @@ def build_index(records, transcripts: dict, live: dict, folders: FolderIndex, no
             rows.append((_session(None, cli_id, tx, live.get(cli_id), now, dismissed), tx["folder"]))
 
     # Resolve folders; a move found through one session's transcript also moves its siblings.
-    refs = [resolve_project(row["cwd"], folders, folder, aliases, isdir) for row, folder in rows]
+    refs = [resolve_project(row["cwd"], folders, folder, aliases, isdir, found) for row, folder in rows]
     learned: dict[str, set] = {}
     for ref, (_, folder) in zip(refs, rows):
         if ref.moved_from and ref.path and folder and ref.path in folders.by_encoding(folder):
@@ -209,7 +215,7 @@ def build_index(records, transcripts: dict, live: dict, folders: FolderIndex, no
     merged = {**learned_aliases, **aliases}
     for i, ref in enumerate(refs):
         if ref.path is None and ref.key != SCRATCH and ref.moved_from in merged:
-            refs[i] = resolve_project(rows[i][0]["cwd"], folders, rows[i][1], merged, isdir)
+            refs[i] = resolve_project(rows[i][0]["cwd"], folders, rows[i][1], merged, isdir, found)
     # A session that still has no folder (the folder is gone, or an app scratch folder) goes to "כללי".
     for i, ref in enumerate(refs):
         if ref.path is None:
