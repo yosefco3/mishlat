@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Build a fake home with made-up projects and Claude sessions, for screenshots and trials.
 
-    MISHLAT_HOME=$(python3 scripts/demo_home.py) mishlat scan
-    MISHLAT_HOME=$(python3 scripts/demo_home.py) MISHLAT_PROC_ROOT=$MISHLAT_HOME/_proc mishlat
+    H=$(python3 scripts/demo_home.py)
+    MISHLAT_HOME=$H MISHLAT_AGENTS_CMD="cat $H/_agents.json" mishlat scan
+    MISHLAT_HOME=$H MISHLAT_AGENTS_CMD="cat $H/_agents.json" mishlat
 
 Prints the home's path. Nothing is personal: the projects, titles and prompts are invented.
+The live sessions are faked twice: `_agents.json` is what `claude agents --json` would print
+(the primary source), and `.claude/sessions` + `_proc` feed the registry fallback
+(`MISHLAT_AGENTS_DISABLE=1 MISHLAT_PROC_ROOT=$H/_proc` shows that path instead).
 """
 
 from __future__ import annotations
@@ -33,6 +37,7 @@ class Demo:
         os.makedirs(self.proc)
         os.makedirs(os.path.join(root, ".claude/sessions"))
         self.n = 0
+        self.agents: list[dict] = []  # what `claude agents --json` prints for the alive sessions
 
     def repo(self, rel: str, readme: str | None = None, branch: str = "main") -> str:
         path = os.path.join(self.root, "Desktop", rel)
@@ -46,7 +51,10 @@ class Demo:
 
     def session(self, cwd: str, title: str, ago_days: float, turns: int = 6, status: str | None = None,
                 question: str = "", detail: str = "", writes: int = 3, prompt: str = "", plan=None,
-                interrupted: bool = False, alive: bool = False, transcript: bool = True, starred: bool = False) -> str:
+                interrupted: bool = False, alive: bool = False, transcript: bool = True, starred: bool = False,
+                live_status: str = "busy", waiting_for: str | None = None) -> str:
+        """`alive`: a live Claude Code process; `live_status` is what the CLI's listing says of it
+        (busy / waiting / idle) and `waiting_for` what a waiting one waits for."""
         self.n += 1
         sid, cli = f"local_demo{self.n:04d}", f"0000{self.n:04d}-0000-4000-8000-{self.n:012d}"
         last = NOW - int(ago_days * DAY)
@@ -84,6 +92,12 @@ class Demo:
             fields = ["S"] + [str(i) for i in range(1, 19)] + ["777"] + ["0"] * 10
             with open(os.path.join(self.proc, str(pid), "stat"), "w") as f:
                 f.write(f"{pid} (claude) " + " ".join(fields) + "\n")
+            entry = {"pid": pid, "cwd": cwd, "kind": "interactive", "startedAt": last, "sessionId": cli,
+                     "name": title, "status": live_status}
+            if waiting_for:
+                entry["waitingFor"] = waiting_for
+            self.agents.append(entry)
+        if alive and live_status == "busy":  # a turn runs: the transcript is being written
             d = os.path.join(self.root, ".claude/projects", encode(cwd), f"{cli}.jsonl")
             os.utime(d, None)  # written just now: working
             with open(d, "a", encoding="utf-8") as f:
@@ -108,7 +122,10 @@ def build(root: str) -> None:
     d.session(shop, "Lighthouse pass on the product page", 2, turns=7, status="review_ready",
               detail="Images lazy-loaded, LCP down from 4.1 s to 1.9 s; please check the gallery on mobile")
     d.session(shop, "Migrate the newsletter form", 9, turns=5)
-    d.session(api, "Rate limiting for the search endpoint", 1, turns=11, writes=8, starred=True)
+    d.session(api, "Rate limiting for the search endpoint", 1, turns=11, writes=8, starred=True, alive=True,
+              live_status="idle")
+    d.session(api, "Add the audit log table", 0.02, turns=4, alive=True, live_status="waiting",
+              waiting_for="permission prompt")
     d.session(api, "Stripe webhook retries", 4, turns=8, status="blocked", question="Keep the 24 h retry window or extend it to 72 h?")
     d.session(api, "Postgres 16 upgrade notes", 33, turns=4, writes=0)
     d.session(book, "Chapter 3: spring soups", 0.5, turns=12, interrupted=True,
@@ -121,6 +138,8 @@ def build(root: str) -> None:
     d.session(tools, "Why did the restore fail?", 70, turns=2, writes=0)
     d.session(os.path.join(root, "Desktop", "old-landing-page"), "Landing page copy", 90, turns=5, transcript=False)
     d.session(os.path.join(root, "Desktop", "old-landing-page"), "Hero image ideas", 95, turns=1, writes=0)
+    with open(os.path.join(root, "_agents.json"), "w", encoding="utf-8") as f:
+        json.dump(d.agents, f, ensure_ascii=False, indent=2)
 
 
 def main() -> int:

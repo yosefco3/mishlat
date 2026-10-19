@@ -13,6 +13,13 @@ COLOR = {"working": "#2e9e5b", "open": "#8a8578", "waiting": "#d4900f", "review"
 STATE_LABEL = {"working": "עובד עכשיו", "open": "פתוח באפליקציה", "waiting": "מחכה לך",
                "review": "לבדיקה", "stopped": "נעצר באמצע", "idle": "סגור"}
 SECTIONS = (("waiting", "מחכים לך"), ("review", "לבדיקה"), ("stopped", "נעצרו באמצע"), ("working", "עובדים"))
+WAITING_FOR = {  # what `claude agents --json` says a session waits for (its five documented values)
+    "permission prompt": "מבקש אישור לפעולה",
+    "input needed": "מחכה לקלט ממך",
+    "sandbox request": "מבקש אישור ל-sandbox",
+    "worker request": "מבקש אישור ל-worker",
+    "dialog open": "חלון פתוח באפליקציה",
+}
 FILTERS = (("all", "הכול"), ("active", "פעילים"), ("week", "השבוע"), ("stale", "ישנים"), ("cleanup", "למחיקה"))
 CLEANUP_LABEL = {
     "gone": "הפרויקט כבר לא קיים",
@@ -85,7 +92,8 @@ def subline(s: dict) -> str:
     """The second line of a session row: what the user needs to know about it now (translated)."""
     state = s["state"]
     if state == "waiting":
-        return s.get("question") or t("מחכה לתשובה שלך")
+        question = s.get("question")
+        return t(WAITING_FOR[question]) if question in WAITING_FOR else (question or t("מחכה לתשובה שלך"))
     if state == "review":
         return s.get("detail") or t("סיים, מחכה לבדיקה")
     if state == "stopped":

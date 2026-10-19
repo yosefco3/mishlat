@@ -19,6 +19,10 @@ EN: dict[str, str] = {
     "עובד עכשיו": "working now", "פתוח באפליקציה": "open in the app", "מחכה לך": "waiting for you",
     "לבדיקה": "to review", "נעצר באמצע": "stopped midway", "סגור": "closed",
     "מחכים לך": "Waiting for you", "נעצרו באמצע": "Stopped midway", "עובדים": "Working",
+    # what `claude agents --json` says a session waits for
+    "מבקש אישור לפעולה": "asks you to approve an action", "מחכה לקלט ממך": "needs your input",
+    "מבקש אישור ל-sandbox": "asks to approve a sandbox request", "מבקש אישור ל-worker": "asks to approve a worker request",
+    "חלון פתוח באפליקציה": "a dialog is open in the app",
     "הכול": "All", "פעילים": "Active", "השבוע": "This week", "ישנים": "Stale", "למחיקה": "To delete",
     "ישנים ({n})": "Stale ({n})", "למחיקה ({n})": "To delete ({n})",
     # cleanup reasons

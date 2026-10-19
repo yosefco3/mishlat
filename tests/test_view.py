@@ -40,6 +40,8 @@ class EnglishTest(unittest.TestCase):
         self.assertEqual(view.format_age(NOW - 10_000, NOW), "now")
         self.assertEqual(view.count_label(7), "7 sessions")
         self.assertEqual(view.subline(sess("working", step="Build", steps_done=1, steps_total=4)), "step 2/4: \u2068Build\u2069")
+        self.assertEqual(view.subline(sess("waiting", question="permission prompt")), "asks you to approve an action")
+        self.assertEqual(view.subline(sess("waiting", question="input needed")), "needs your input")
         self.assertEqual(view.cleanup_reason_text(sess("idle", cleanup="old", last_activity=NOW - 45 * DAY_MS), NOW),
                          "stale: untouched for 45 days")
         self.assertEqual(view.status_text(None, NOW, scanning=True), "scanning…")
@@ -68,6 +70,10 @@ class LabelTest(unittest.TestCase):
     def test_sublines(self):
         self.assertEqual(view.subline(sess("waiting", question="Commit?")), "Commit?")
         self.assertEqual(view.subline(sess("waiting")), "מחכה לתשובה שלך")
+        self.assertEqual(view.subline(sess("waiting", question="permission prompt")), "מבקש אישור לפעולה")
+        self.assertEqual(view.subline(sess("waiting", question="dialog open")), "חלון פתוח באפליקציה")
+        self.assertEqual(view.subline(sess("waiting", question="worker request")), "מבקש אישור ל-worker")
+        self.assertEqual(view.subline(sess("waiting", question="something new")), "something new")
         self.assertEqual(view.subline(sess("review", detail="PDF ready")), "PDF ready")
         self.assertEqual(view.subline(sess("stopped", step="Write", steps_done=1, steps_total=3)),
                          "נעצר באמצע · צעד 2/3: \u2068Write\u2069")

@@ -21,6 +21,7 @@ def main() -> int:
                           check=True).stdout.strip()
     os.environ["MISHLAT_HOME"] = home
     os.environ["MISHLAT_PROC_ROOT"] = os.path.join(home, "_proc")
+    os.environ["MISHLAT_AGENTS_CMD"] = "cat " + os.path.join(home, "_agents.json")
     os.makedirs(OUT, exist_ok=True)
     import gi
     gi.require_version("Gtk", "3.0")

@@ -44,6 +44,8 @@ CONFIG = {
 MANUAL_MAP: dict[str, list[str]] = {
     "tests/test_store.py": ["mishlat/store.py", "mishlat/paths.py"],
     "tests/test_live.py": ["mishlat/live.py"],
+    "tests/test_agents.py": ["mishlat/agents.py"],
+    "tests/test_demo.py": ["scripts/demo_home.py", "mishlat/scan.py"],
     "tests/test_transcripts.py": ["mishlat/transcripts.py"],
     "tests/test_folders.py": ["mishlat/folders.py", "mishlat/gitinfo.py"],
     "tests/test_model_resolve.py": ["mishlat/model.py"],
