@@ -1,0 +1,46 @@
+[
+  {
+    "pid": 20043,
+    "cwd": "/home/u/Desktop/book",
+    "kind": "interactive",
+    "startedAt": 1792427112819,
+    "sessionId": "39796263-6d18-4539-b26a-13e3cedf3666",
+    "name": "Chapter three",
+    "status": "idle"
+  },
+  {
+    "pid": 76563,
+    "cwd": "/home/u/Desktop/apps/mishlat",
+    "kind": "interactive",
+    "startedAt": 1792437361714,
+    "sessionId": "a6c8cd08-d60c-4284-85cf-c65c0b0bf3ab",
+    "name": "Live sessions from claude agents --json",
+    "status": "busy"
+  },
+  {
+    "pid": 80001,
+    "cwd": "/home/u/Desktop/shop",
+    "kind": "interactive",
+    "startedAt": 1792437400000,
+    "sessionId": "0b2d6a0e-2b1c-4f0e-9a3e-5d2c1b7e8f90",
+    "name": "Checkout fix",
+    "status": "waiting",
+    "waitingFor": "permission prompt"
+  },
+  {
+    "id": "bg-7f3a",
+    "cwd": "/home/u/Desktop/shop",
+    "kind": "background",
+    "startedAt": 1792437000000,
+    "sessionId": "5c1e2f3a-4b5c-4d6e-8f70-1a2b3c4d5e6f",
+    "name": "Run the test suite",
+    "state": "working"
+  },
+  {
+    "pid": 80002,
+    "cwd": "/home/u/scratch",
+    "kind": "interactive",
+    "startedAt": 1792437500000,
+    "status": "idle"
+  }
+]

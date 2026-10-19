@@ -9,7 +9,7 @@ from tests.helpers import FakeHome
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 PLUGIN = os.path.join(REPO, "plugin")
-BUNDLED = {"actions", "cli", "describe", "folders", "gitinfo", "index", "__init__", "live", "__main__", "model",
+BUNDLED = {"actions", "agents", "cli", "describe", "folders", "gitinfo", "index", "__init__", "live", "__main__", "model",
            "paths", "scan", "store", "strings", "transcripts", "view"}
 
 
