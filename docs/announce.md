@@ -65,13 +65,18 @@ with Mishlat as an example rather than opening a third issue.
 
 Note that `claude agents --json` (verified on CLI 2.1.299) already lists the *live* sessions:
 `pid`, `cwd`, `kind`, `startedAt`, `sessionId`, `name`, `status` (`busy`/`idle`). What it lacks is
-the waiting-for-you state and the sessions that are not running. The text below, for a comment:
+the waiting-for-you state and the sessions that are not running. Posted on 2026-10-19 as yosefco3:
+https://github.com/anthropics/claude-code/issues/94620#issuecomment-6275154547
 
-**Title:** A documented way to list sessions and their state (e.g. `claude sessions --json`)
+Another data point, from the Linux desktop side. I built Mishlat (https://github.com/yosefco3/mishlat), a GTK window that lists every project with its Claude Code sessions and their state, with a tray badge, file-manager marks and a cleanup list. Like the tools above it runs on undocumented files: the desktop app's session store (`~/.config/Claude/claude-code-sessions/*/*/local_*.json`), the transcripts under `~/.claude/projects/`, and the pid registry in `~/.claude/sessions/`.
 
-Tools that show sessions across projects have to read the desktop app's own files
-(`claude-code-sessions/*.json`, the transcripts, the pid registry), none of which is documented, so
-every app update can break them. A small open-source example: https://github.com/yosefco3/mishlat
-(one window with every project, the sessions that wait for you, folder marks, a cleanup list).
-A documented listing with the session id, folder, title, last activity and the post-turn state
-(working / blocked on the user / review ready) would make such tools safe to maintain.
+Two things I can add to the thread:
+
+1. The "turn ended with a question in prose" gap is already solved inside the desktop app. Every record in its session store carries a `postTurnSummary` with `status_category` (`blocked`, `review_ready` or `completed`), `needs_action` (what the user must do, e.g. the open question) and `status_detail`. That is exactly the signal missing from `claude agents --json`, where such a session reads `idle`. Exposing the same classification in the listing would close the gap for interactive sessions without new inference on the consumer side.
+
+2. On CLI 2.1.299 the desktop app's own sessions do appear in `claude agents --json` as `kind: "interactive"` with `busy`/`idle`, so live state is covered. What a cross-project view still has to read from undocumented files:
+   - sessions that are not running: saved interactive sessions with `sessionId`, `cwd`, `name` and a last-activity time (the listing drops an interactive session once its process exits; `--all` only adds completed background ones);
+   - the post-turn classification above, plus its one-line detail;
+   - the transcript path per session, so tools stop reconstructing `~/.claude/projects/<encoded cwd>/<id>.jsonl`, which breaks as soon as a project folder is renamed or moved.
+
+Happy to adjust Mishlat to whatever shape ships.
