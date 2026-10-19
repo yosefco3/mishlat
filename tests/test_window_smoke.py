@@ -48,6 +48,29 @@ class WindowSmokeTest(unittest.TestCase):
         self.assertEqual(self.w.side_sessions, ["local_q", "local_w"])  # waiting, then working
         self.assertIn("נסרק", self.w.status.get_text())
 
+    def test_apply_settings_saves_and_rescans(self):
+        import mishlat.index as io
+        from mishlat.strings import EN
+        from mishlat.window import NOTIFY_CHOICES
+
+        class App:
+            scans = 0
+
+            def request_scan(self):
+                self.scans += 1
+        self.w.app = App()
+        self.w.apply_settings({"notify": "off", "old_days": 7})
+        saved = io.load_settings(self.home.root)
+        self.assertEqual((saved["notify"], saved["old_days"]), ("off", 7))
+        self.assertEqual(self.w.app.scans, 1)
+        self.w.apply_settings({"notify": "off", "old_days": 7})   # nothing changed: no scan
+        self.assertEqual(self.w.app.scans, 1)
+        for _, text in NOTIFY_CHOICES:                              # every choice has English
+            self.assertIn(text, EN)
+        dialog, combo, days = self.w.settings_dialog({"notify": "all", "old_days": 45})
+        self.assertEqual((combo.get_active_id(), days.get_value()), ("all", 45))
+        dialog.destroy()
+
     def test_search_stale_focus_and_empty(self):
         self.w.set_index(self.index)
         self.w.set_query("פרק 4")

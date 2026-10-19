@@ -34,9 +34,9 @@ app already announces itself.
 4. `MISHLAT_LANG=en python3 -m mishlat` ⇒ the same dialog in English.
 5. `python3 -m pytest -q` ⇒ green.
 
-## ⏳ Pending (1/3 completed):
+## ⏳ Pending (2/3 completed):
 1. ✅ `01_notify.md` — `notify` setting, `lastFocusedAt` in the record, `focused_session`, `to_notify` modes; tests.
-2. `02_dialog.md` — the settings dialog (⚙, Ctrl+,), `apply_settings`, English strings; smoke test.
+2. ✅ `02_dialog.md` — the settings dialog (⚙, Ctrl+,), `apply_settings`, English strings; smoke test.
 3. `03_release.md` — README, APP_OVERVIEW, version 0.1.3, plugin sync, graphs, local install.
 
 > כל צעד עצמאי, נוגע ב-2-4 קבצים, עם טסטים, ו-commit נפרד.

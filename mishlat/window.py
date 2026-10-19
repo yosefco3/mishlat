@@ -132,6 +132,11 @@ def _clear(box: Gtk.Container) -> None:
         child.destroy()
 
 
+NOTIFY_CHOICES = (("others", "על כל שיחה שמחכה לך, חוץ מזו שאתה מסתכל בה"),
+                  ("all", "על כל שיחה שמחכה לך"),
+                  ("off", "כבויות (הסימון בפאנל נשאר)"))
+
+
 class MishlatWindow(Gtk.ApplicationWindow):
     def __init__(self, app, home: str) -> None:
         super().__init__(application=app, title=t("משלט"))
@@ -165,6 +170,10 @@ class MishlatWindow(Gtk.ApplicationWindow):
         rescan.set_tooltip_text(t("סרוק עכשיו (Ctrl+R)"))
         rescan.connect("clicked", lambda *_: self._request_scan())
         header.pack_end(rescan)
+        gear = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
+        gear.set_tooltip_text(t("הגדרות (Ctrl+,)"))
+        gear.connect("clicked", lambda *_: self._settings())
+        header.pack_end(gear)
         self.set_titlebar(header)
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -270,6 +279,51 @@ class MishlatWindow(Gtk.ApplicationWindow):
         for mode, title in view.FILTERS:
             self.chips[mode].set_label(t(title))
         self.render(force=True)
+
+    def _settings(self) -> None:
+        """Ctrl+, / ⚙: notifications and the old-days threshold, saved in settings.json."""
+        dialog, combo, days = self.settings_dialog(io.load_settings(self.home))
+        dialog.show_all()
+        answer = dialog.run()
+        values = {"notify": combo.get_active_id() or "others", "old_days": int(days.get_value())}
+        dialog.destroy()
+        if answer == Gtk.ResponseType.OK:
+            self.apply_settings(values)
+
+    def settings_dialog(self, current: dict):
+        """The dialog and its two inputs, not yet shown: (dialog, notify combo, days spin)."""
+        dialog = Gtk.Dialog(title=t("הגדרות"), transient_for=self, modal=True)
+        dialog.add_buttons(t("ביטול"), Gtk.ResponseType.CANCEL, t("שמור"), Gtk.ResponseType.OK)
+        dialog.set_default_size(560, -1)
+        grid = Gtk.Grid(row_spacing=10, column_spacing=12, border_width=12)
+        grid.attach(_label(t("התראות על המסך")), 0, 0, 1, 1)
+        combo = Gtk.ComboBoxText()
+        for key, text in NOTIFY_CHOICES:
+            combo.append(key, t(text))
+        combo.set_active_id(current["notify"])
+        combo.set_hexpand(True)
+        grid.attach(combo, 1, 0, 1, 1)
+        grid.attach(_label(t("שיחה נחשבת ישנה אחרי (ימים)")), 0, 1, 1, 1)
+        days = Gtk.SpinButton.new_with_range(1, 365, 1)
+        days.set_value(current["old_days"])
+        days.set_activates_default(True)
+        grid.attach(days, 1, 1, 1, 1)
+        grid.attach(_label(t("ישנה = מועמדת למחיקה, חוץ מהשיחה האחרונה בכל תיקייה"), css=("mishlat-dim",), wrap=True),
+                    0, 2, 2, 1)
+        dialog.get_content_area().pack_start(grid, False, False, 0)
+        dialog.set_default_response(Gtk.ResponseType.OK)
+        return dialog, combo, days
+
+    def apply_settings(self, values: dict) -> None:
+        """Save the keys that changed and rescan, so the cleanup list and the notifier use them at once."""
+        current = io.load_settings(self.home)
+        changed = False
+        for key, value in values.items():
+            if current.get(key) != value:
+                io.save_setting(self.home, key, value)
+                changed = True
+        if changed:
+            self._request_scan()
 
     # ── drawing ──
     def _tick(self) -> bool:
@@ -597,6 +651,9 @@ class MishlatWindow(Gtk.ApplicationWindow):
             return True
         if ctrl and event.keyval in (Gdk.KEY_0, Gdk.KEY_KP_0):
             self.set_font(io.FONT_DEFAULT)
+            return True
+        if ctrl and event.keyval == Gdk.KEY_comma:
+            self._settings()
             return True
         if ctrl and event.keyval in (Gdk.KEY_l, Gdk.KEY_L):
             self.set_language("en" if lang() == "he" else "he")

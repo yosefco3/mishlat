@@ -94,6 +94,13 @@ EN: dict[str, str] = {
     "שיחות Claude בתיקייה (משלט)": "Claude sessions in the folder (Mishlat)",
     "פותח את משלט על התיקייה הזו": "Opens Mishlat on this folder",
     "פותח שיחת Claude Code חדשה בתיקייה": "Starts a new Claude Code session in the folder",
+    # settings dialog
+    "הגדרות": "Settings", "הגדרות (Ctrl+,)": "Settings (Ctrl+,)", "התראות על המסך": "Desktop notifications",
+    "על כל שיחה שמחכה לך, חוץ מזו שאתה מסתכל בה": "every session that waits for you, except the one you are looking at",
+    "על כל שיחה שמחכה לך": "every session that waits for you",
+    "כבויות (הסימון בפאנל נשאר)": "off (the panel badge stays)",
+    "שיחה נחשבת ישנה אחרי (ימים)": "A session counts as old after (days)",
+    "ישנה = מועמדת למחיקה, חוץ מהשיחה האחרונה בכל תיקייה": "old = offered for deletion, except the newest session of each folder",
 }
 
 
