@@ -33,10 +33,10 @@ inside Claude Code (the scanner and slash commands) to every OS.
 5. In a Claude Code session with the plugin loaded (`CLAUDE_CODE_PLUGIN_DIRS=~/Desktop/apps/mishlat/plugin`):
    `/projects` prints the summary; `/needs-me` the attention list; `/cleanup` the proposals.
 
-## ⏳ Pending (5/6 completed):
+## ✅ Pending (6/6 completed):
 1. ✅ `01_i18n.md` — `strings.py` (`t()`, EN table, language from settings/locale), every UI string, direction, Ctrl+L.
 2. ✅ `02_desktops.md` — Nautilus branch in the extension, AyatanaAppIndicator fallback, GNOME hotkey, installer detection.
 3. ✅ `03_demo.md` — `scripts/demo_home.py` (fake home), `scripts/screenshot.py` (offscreen, both languages), README screenshots.
 4. ✅ `04_scrub.md` — scrub specs/tests/docs of personal names, drop plan pages, generic app id, LICENSE, CONTRIBUTING, README rewrite.
 5. ✅ `05_plugin.md` — `plugin/` with the scanner and the three commands; `claude plugin validate`.
-6. `06_publish.md` — `gh repo create yosefco3/mishlat --public`, push, announcement draft; after the user's go.
+6. ✅ `06_publish.md` — `gh repo create yosefco3/mishlat --public`, push, announcement draft; after the user's go.
