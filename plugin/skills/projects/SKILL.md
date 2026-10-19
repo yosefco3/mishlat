@@ -6,7 +6,8 @@ description: Every project with its Claude Code sessions and their state (workin
 # /projects
 
 Run the scanner and show the result. The scanner reads the Claude desktop app's session records,
-Claude Code's transcripts and the live process registry; it writes only its own cache under
+Claude Code's transcripts and `claude agents --json` (the live process registry as the fallback);
+it writes only its own cache under
 `~/.cache/mishlat/`. It never changes anything of the user's.
 
 ```bash

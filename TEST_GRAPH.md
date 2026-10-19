@@ -1,16 +1,16 @@
 # Test Coverage Graph
 
-_נוצר אוטומטית ב: 2026-10-19 21:37_
+_נוצר אוטומטית ב: 2026-10-19 22:29_
 
 ## סיכום / Summary
 
 | מדד / Metric | ערך / Value |
 |---|---|
-| קבצי קוד / source files | 21 |
-| מכוסים / covered | 20 |
+| קבצי קוד / source files | 22 |
+| מכוסים / covered | 21 |
 | ללא טסט / uncovered | 1 |
 | כיסוי / coverage | 95% →0% |
-| טסטים עוברים / passing | 113 ✅ |
+| טסטים עוברים / passing | 128 ✅ |
 | טסטים נכשלים / failing | 0 ❌ |
 
 ## מיפוי קוד → טסטים / Source → Tests
@@ -20,6 +20,7 @@ _נוצר אוטומטית ב: 2026-10-19 21:37_
 | `extension/mishlat_fm.py` | `tests/test_nemo.py` |
 | `mishlat/__main__.py` | `tests/test_install.py` |
 | `mishlat/actions.py` | `tests/test_actions.py` |
+| `mishlat/agents.py` | `tests/test_agents.py` |
 | `mishlat/app.py` | `tests/test_window_smoke.py` |
 | `mishlat/cli.py` | `tests/test_scan.py` |
 | `mishlat/describe.py` | `tests/test_describe.py` |
@@ -32,6 +33,7 @@ _נוצר אוטומטית ב: 2026-10-19 21:37_
 | `mishlat/model.py` | `tests/test_model_index.py` |
 | `mishlat/model.py` | `tests/test_model_resolve.py` |
 | `mishlat/paths.py` | `tests/test_store.py` |
+| `mishlat/scan.py` | `tests/test_demo.py` |
 | `mishlat/scan.py` | `tests/test_scan.py` |
 | `mishlat/store.py` | `tests/test_store.py` |
 | `mishlat/strings.py` | `tests/test_view.py` |
@@ -41,6 +43,7 @@ _נוצר אוטומטית ב: 2026-10-19 21:37_
 | `mishlat/watcher.py` | `tests/test_watcher.py` |
 | `mishlat/window.py` | `tests/test_window_smoke.py` |
 | `plugin/lib/mishlat_cli.py` | `tests/test_plugin.py` |
+| `scripts/demo_home.py` | `tests/test_demo.py` |
 
 ## קבצים ללא טסטים (לפי עדיפות) / Uncovered (by priority)
 

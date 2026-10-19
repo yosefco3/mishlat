@@ -8,7 +8,7 @@ GObject bindings a Linux desktop already has. Please keep it that way.
 ```bash
 python3 -m pytest -q                 # 100+ tests, no display needed (the window smoke test skips)
 python3 -m mishlat scan              # one scan of your own sessions, English summary
-MISHLAT_HOME=$(python3 scripts/demo_home.py) python3 -m mishlat   # the window on made-up data
+H=$(python3 scripts/demo_home.py); MISHLAT_HOME=$H MISHLAT_AGENTS_CMD="cat $H/_agents.json" python3 -m mishlat   # the window on made-up data
 ```
 
 ## How the code is organized

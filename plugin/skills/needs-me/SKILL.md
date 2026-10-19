@@ -13,7 +13,8 @@ From the JSON, take `attention` (session ids, in order) and look each one up in
 `projects[].sessions[]`. Print one line per session, grouped by state in this order: waiting,
 stopped, review. Each line: the state glyph (◐ waiting · ◼ stopped · ◑ review), the project
 `name`, the session `title` as a link `[title](#id)` when the id starts with `local_`, and the
-`question` (or `detail`) after a dash. Then the sessions that `working` right now, with their
+`question` (or `detail`) after a dash (for a session the CLI lists as waiting, `question` is what
+it waits for: "permission prompt", "input needed", …). Then the sessions that `working` right now, with their
 `step`. Nothing else: no advice, no summary of everything.
 
 If `attention` is empty, say so in one line and list the working sessions if any.

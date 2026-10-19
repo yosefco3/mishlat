@@ -1,6 +1,6 @@
 {
   "name": "mishlat",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Your Claude Code sessions by project: /projects lists every project with its sessions and their state, /needs-me the sessions that wait for your answer or review, /cleanup the sessions worth deleting (with reasons) and deletes the ones you approve through the desktop app. Reads the app's own files; writes nothing of its own.",
   "author": {"name": "Yosef Cohen", "url": "https://github.com/yosefco3/mishlat"},
   "homepage": "https://github.com/yosefco3/mishlat",

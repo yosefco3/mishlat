@@ -26,8 +26,9 @@ sources (read-only)                 mishlat process                       reader
 ───────────────────                 ───────────────                       ───────
 app store  local_*.json ──┐   SourceMonitor (Gio) → Coalescer (2 s) ┐
 transcripts *.jsonl ──────┼──▶  ScanRunner (worker thread) ─ Scanner.scan()
-live registry + /proc ────┤        store · live · transcripts · folders · git
-~/Desktop folders ────────┘        model.build_index ─▶ ~/.cache/mishlat/index.json ──▶ Nemo extension
+claude agents --json ─────┤        store · agents (else live registry + /proc) · transcripts · folders · git
+live registry + /proc ────┤        model.build_index ─▶ ~/.cache/mishlat/index.json ──▶ Nemo extension
+~/Desktop folders ────────┘
                                    on the GTK loop:  Tray (badge, menu) · Notifier · MishlatWindow
 ```
 
@@ -35,7 +36,8 @@ live registry + /proc ────┤        store · live · transcripts · fol
 |---|---|
 | `paths.py` | every path, relative to a `home` argument; `version_key` |
 | `store.py` | the app's session records → `Record`; (mtime, size) cache (the store is 42 MB) |
-| `live.py` | `~/.claude/sessions/<pid>.json` + `/proc/<pid>/stat` start time → live processes |
+| `agents.py` | `claude agents --json` (the bundled CLI, found by `actions.claude_cli`) → `LiveEntry` per cli session id: pid, status busy/waiting/idle, `waitingFor`; a 5 s timeout; every failure is an `AgentsError`; `MISHLAT_AGENTS_CMD` / `MISHLAT_AGENTS_DISABLE` |
+| `live.py` | the fallback: `~/.claude/sessions/<pid>.json` + `/proc/<pid>/stat` start time → live processes |
 | `transcripts.py` | transcripts by session id, read incrementally: titles, first prompt, task list, interruption |
 | `folders.py`, `gitinfo.py` | folders under the roots (encoding, name and identity lookups), a folder's identity (inode, git remote, entry names), the deep search for moved folders; branch, dirty state, remote URL |
 | `model.py` | project resolution (moved folders), the six states, `build_index`, search, attention, `entered` |
@@ -52,8 +54,9 @@ live registry + /proc ────┤        store · live · transcripts · fol
 | `extension/mishlat_fm.py` | Nemo and Nautilus: emblems, the "Claude" column, parent sums, two menu items (self-contained) |
 
 ## מודלים / Data models
-`~/.cache/mishlat/index.json` (version 1): `scanned_at`, `scan_ms`, `app_version`, `roots`,
-`projects[]`, `attention[]` (session ids in order), `totals`, `errors[]`.
+`~/.cache/mishlat/index.json` (version 1): `scanned_at`, `scan_ms`, `app_version`, `live_source`
+(`agents` when the CLI's listing was read, `registry` otherwise), `roots`, `projects[]`,
+`attention[]` (session ids in order), `totals`, `errors[]`.
 - Project: `key` (folder path now, or `general` for "כללי"), `name` (path below the root, or
   `כללי`), `path`, `moved_from[]` (for "כללי": the folders that no longer exist), `ambiguous`,
   `is_repo`, `branch`, `dirty`, `general`, counts
@@ -62,14 +65,20 @@ live registry + /proc ────┤        store · live · transcripts · fol
 - Session: `id` (`local_…`, or the cli id for a terminal-only session), `cli_id`, `source`
   (`app`/`cli`), `title`, `cwd`, `project`, `state`, `question`, `detail`, `step`, `steps_done`,
   `steps_total`, `first_prompt`, `transcript`, `last_activity`, `starred`, `dismissed`, `attention`,
-  `pid`, `started_in` (the start project when the work moved it), `assigned` (moved by hand),
+  `waiting_for` (what the CLI says a waiting session waits for, else null), `pid`,
+  `started_in` (the start project when the work moved it), `assigned` (moved by hand),
   `turns`, `writes`, `cleanup` (the reason key or null). Index: `cleanup[]` ids newest first,
   `totals.cleanup`, `totals.cleanup_by`.
 
 ## Workflow / Lifecycle
-- Session state: working (alive and a transcript write in the last 90 s) > stopped (interrupted
-  with a task step in progress) > waiting (the app's post-turn summary for the last turn is
-  `blocked`) > review (`review_ready`) > open (alive) > idle.
+- Live source: `claude agents --json` first (a session is live iff listed; its `status` says
+  whether a turn runs). When the command is missing or fails: one error line, and the registry +
+  `/proc` as before 0.1.2. `index["live_source"]` records which; `mishlat scan` prints it.
+- Session state: working (listed `busy`; in the fallback: alive and a transcript write in the
+  last 90 s) > stopped (interrupted with a task step in progress) > waiting (listed `waiting`,
+  with `waitingFor` as the question when the store has none; or the app's post-turn summary for
+  the last turn is `blocked`) > review (`review_ready`) > open (alive: listed `idle`, or a live
+  process in the fallback) > idle.
 - Project of a session: scratch folding; the folder exists (unless the transcript folder says the
   history moved: a reused name); the folder found again by its remembered identity
   (`~/.cache/mishlat/folders.json`: inode + git remote + entry names, recorded at every scan; an
@@ -105,3 +114,4 @@ live registry + /proc ────┤        store · live · transcripts · fol
 | 2026-10-19 | Folder purpose line on cards: README first heading + paragraph, or the user's text (`descriptions.json`); "תאר את התיקייה…" can write a README once | `mishlat/describe.py`, `mishlat/window.py` |
 | 2026-10-19 | Open source: English UI with a Hebrew switch (`strings.py`, Ctrl+L), Nemo + Nautilus extension, AppIndicator fallback, GNOME hotkey, demo home + screenshots, scrubbed specs, MIT | `mishlat/strings.py`, `extension/`, `install.sh`, `scripts/` |
 | 2026-10-19 | 0.1.1: folder identity memory; a renamed or moved folder (also into a repository) keeps its sessions; a deleted one stays "gone" | `mishlat/folders.py`, `mishlat/gitinfo.py`, `mishlat/scan.py`, `mishlat/model.py` |
+| 2026-10-19 | 0.1.2: `claude agents --json` is the primary live source (busy / waiting / idle → working / waiting / open, `waitingFor` shown); the registry + `/proc` reader is the fallback; `index.live_source`; the demo home fakes the listing | `mishlat/agents.py`, `mishlat/scan.py`, `mishlat/model.py`, `mishlat/view.py`, `scripts/demo_home.py` |

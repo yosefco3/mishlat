@@ -60,7 +60,7 @@ and the **Super+Shift+C** hotkey (Cinnamon and GNOME; other desktops get an inst
 Try it on made-up data first, without touching your own:
 
 ```bash
-export MISHLAT_HOME=$(python3 scripts/demo_home.py) MISHLAT_PROC_ROOT=$MISHLAT_HOME/_proc
+export MISHLAT_HOME=$(python3 scripts/demo_home.py) MISHLAT_AGENTS_CMD="cat $MISHLAT_HOME/_agents.json"
 python3 -m mishlat
 ```
 
@@ -87,11 +87,21 @@ tools, which confirm every deletion. The next scan drops the deleted sessions fr
 
 ## How it decides
 
-**Session states.** *working*: a live Claude Code process and a transcript write in the last
-90 s · *open*: a live process, quiet · *waiting*: the app's post-turn summary for the last turn
-says the session is blocked on you · *review*: that summary says the turn ended with something
-to review · *stopped*: the user interrupted a turn with a task-list step still in progress ·
-*idle*: everything else.
+**Session states.** Which sessions are live, and whether a turn runs, comes from Claude Code
+itself: every scan runs the bundled CLI's `claude agents --json` (documented, ~0.15 s). A
+session is live iff it is listed. *working*: listed `busy` · *open*: listed `idle` · *waiting*:
+listed `waiting` (the row then says what for: a permission prompt, input needed, …), or the
+app's post-turn summary for the last turn says the session is blocked on you · *review*: that
+summary says the turn ended with something to review · *stopped*: the user interrupted a turn
+with a task-list step still in progress · *idle*: everything else. Waiting, review and stopped
+win over open; a running turn wins over all of them.
+
+When the listing cannot be read (no CLI, an error, a 5 s timeout) the scan says so in its error
+line and falls back to the live process registry (`~/.claude/sessions/` checked against `/proc`)
+with the older rule: *working* = a live process and a transcript write in the last 90 s. The
+summary of `mishlat scan` ends its first line with `live source: agents` or `registry`.
+`MISHLAT_AGENTS_DISABLE=1` forces the fallback; `MISHLAT_AGENTS_CMD` runs another command in
+place of the CLI (the demo home uses it).
 
 **The project of a session.** First the folder it ran in. A folder that was renamed or moved is
 found again by its remembered identity: at every scan Mishlat notes each known folder's inode, its
@@ -108,9 +118,11 @@ sessions, and a purpose line from `README.md`.
 
 Reads, never writes: the Claude desktop app's session records
 (`~/.config/Claude/claude-code-sessions/`), Claude Code's transcripts (`~/.claude/projects/`, by
-session id, read incrementally), the live process registry (`~/.claude/sessions/` with `/proc`),
-the folders under your roots (3 levels, default `~/Desktop`), and `.git/HEAD` plus `git status` of
-project repositories.
+session id, read incrementally), the output of `claude agents --json` (the CLI bundled with the
+app, `~/.config/Claude/claude-code/<version>/…/claude`, or `claude` on PATH; it lists the live
+sessions and writes nothing), as a fallback the live process registry (`~/.claude/sessions/`
+with `/proc`), the folders under your roots (3 levels, default `~/Desktop`), and `.git/HEAD`
+plus `git status` of project repositories.
 
 Writes only its own files, private (mode 0600): `~/.cache/mishlat/index.json` (the index every
 part reads), `transcripts.json` (the incremental-read cache) and `folders.json` (the identity of
@@ -136,7 +148,8 @@ macOS, with no desktop integration. See `plugin/README.md`.
 - Linux only (GTK 3, Nemo/Nautilus). The plugin's scanner also runs on macOS.
 - Everything rests on files the Claude app keeps for itself and does not document. An app update
   can change them; the scanner then reports what it could not read instead of showing nothing.
-- "Working" is inferred from transcript writes; a long silent tool call shows as "open".
+- With the CLI's listing, "working" is what Claude Code reports. In the registry fallback it is
+  inferred from transcript writes, and a long silent tool call shows as "open".
 - Nautilus support is written against nautilus-python 4 and has not been run by the author.
 - Cinnamon's XApp tray works out of the box; on GNOME you need an AppIndicator extension.
 

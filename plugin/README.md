@@ -29,7 +29,9 @@ or add it to your user settings so every session has it:
 
 Reads the Claude desktop app's session records (`~/.config/Claude/claude-code-sessions/` on Linux,
 `~/Library/Application Support/Claude/claude-code-sessions/` on macOS), Claude Code's transcripts
-(`~/.claude/projects/`) and its live process registry (`~/.claude/sessions/`). Writes only
+(`~/.claude/projects/`), the output of `claude agents --json` (the live sessions and whether a turn
+runs; `MISHLAT_AGENTS_DISABLE=1` skips it) and, as the fallback, its live process registry
+(`~/.claude/sessions/`). Writes only
 `~/.cache/mishlat/` (the index and the incremental-read cache) and, when you ask, `~/.config/mishlat/keep.json`.
 Deletions are done by the desktop app's own session tool, which confirms each one.
 
