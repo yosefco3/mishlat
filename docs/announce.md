@@ -58,7 +58,14 @@ Checklist: tick all (you have seen the repo; links public; specific to Claude Co
 ## anthropics/claude-code (feature request issue; Discussions are disabled there)
 
 The repository has no Discussions tab, so there is no "Show and tell". What it does accept is a
-feature request in its issue tracker. Ask for the stable interface, not the feature:
+feature request in its issue tracker, and this one is already filed twice: #94620 (a built-in way
+to list running sessions and their state, open since 2026-09-16) and #85192 (expose the
+"waiting for user input" state in `claude agents --json`, open since 2026-08-09). Comment there
+with Mishlat as an example rather than opening a third issue.
+
+Note that `claude agents --json` (verified on CLI 2.1.299) already lists the *live* sessions:
+`pid`, `cwd`, `kind`, `startedAt`, `sessionId`, `name`, `status` (`busy`/`idle`). What it lacks is
+the waiting-for-you state and the sessions that are not running. The text below, for a comment:
 
 **Title:** A documented way to list sessions and their state (e.g. `claude sessions --json`)
 
