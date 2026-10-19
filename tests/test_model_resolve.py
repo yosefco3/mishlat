@@ -85,6 +85,25 @@ class StateTest(unittest.TestCase):
         self.assertEqual(s("blocked", True, False, self.tx(interrupted=True, open_step=True)), "stopped")
         self.assertEqual(s("blocked", True, True, self.tx()), "waiting")
 
+    def test_live_status_from_the_cli_listing(self):
+        """`claude agents --json` decides for a listed session; the 90 s rule only without it."""
+        s = lambda status, tx, live, fresh=True: state_of(status, fresh, True, tx, self.NOW, live)
+        self.assertEqual(s(None, self.tx(), "busy"), "working")                   # an old transcript still works
+        self.assertEqual(s(None, None, "busy"), "working")                        # no transcript at all
+        self.assertEqual(s(None, self.tx(ago=1), "idle"), "open")                 # a fresh write, yet idle
+        self.assertEqual(s(None, self.tx(ago=1), None), "working")                # the fallback keeps the rule
+        self.assertEqual(s(None, self.tx(), "waiting"), "waiting")                # a permission prompt
+        self.assertEqual(s("blocked", self.tx(), "waiting"), "waiting")
+        self.assertEqual(s("blocked", self.tx(), "idle"), "waiting")              # the store wins over open
+        self.assertEqual(s("blocked", self.tx(), "idle", fresh=False), "open")    # an older turn's question
+        self.assertEqual(s("review_ready", self.tx(), "idle"), "review")
+        self.assertEqual(s("blocked", self.tx(), "busy"), "working")              # answered: a turn runs
+        self.assertEqual(s(None, self.tx(interrupted=True, open_step=True), "idle"), "stopped")
+        self.assertEqual(s(None, self.tx(interrupted=True, open_step=True), "waiting"), "stopped")
+        self.assertEqual(s(None, self.tx(interrupted=True, open_step=True), "busy"), "working")
+        self.assertEqual(s(None, self.tx(ago=1), "dreaming"), "open")             # an unknown value: not working
+        self.assertEqual(state_of(None, True, False, self.tx(ago=1), self.NOW, "busy"), "idle")  # not alive
+
 
 if __name__ == "__main__":
     unittest.main()

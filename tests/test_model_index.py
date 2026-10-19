@@ -107,6 +107,28 @@ class BuildIndexTest(unittest.TestCase):
         idx = build([rec("local_b", w, None, title="")], existing={w})
         self.assertEqual(idx["projects"][0]["sessions"][0]["title"], "(ללא כותרת)")
 
+    def test_cli_status_and_waiting_for(self):
+        w = f"{D}/w"
+        live = {"c1": Live(7, "c1", w, None, None, 0, status="waiting", waiting_for="permission prompt"),
+                "c2": Live(8, "c2", w, None, None, 0, status="idle"),
+                "c3": Live(9, "c3", w, None, None, 0, status="busy"),
+                "c4": Live(10, "c4", w, None, None, 0, status="waiting", waiting_for="input needed")}
+        idx = build([rec("local_a", w, "c1", status="completed", detail="all done"),
+                     rec("local_b", w, "c2", status="blocked", question="Merge?"),
+                     rec("local_c", w, "c3", status="blocked", question="Merge?"),
+                     rec("local_d", w, "c4", status="blocked", question="Old?", fresh=False)],
+                    {"c2": tx(encode_path(w), last_write=NOW - 1000)}, live=live, existing={w})
+        rows = {s["id"]: s for s in idx["projects"][0]["sessions"]}
+        a, b, c, d = rows["local_a"], rows["local_b"], rows["local_c"], rows["local_d"]
+        self.assertEqual((a["state"], a["question"], a["waiting_for"], a["detail"]),
+                         ("waiting", "permission prompt", "permission prompt", "all done"))
+        self.assertEqual((b["state"], b["question"], b["waiting_for"]), ("waiting", "Merge?", None))  # idle, store wins
+        self.assertEqual((c["state"], c["question"], c["waiting_for"]), ("working", None, None))
+        self.assertEqual((d["state"], d["question"], d["waiting_for"]), ("waiting", "input needed", "input needed"))
+        self.assertEqual(set(idx["attention"]), {"local_a", "local_b", "local_d"})
+        self.assertEqual(idx["projects"][0]["waiting"], 3)
+        self.assertEqual(idx["totals"]["working"], 1)
+
 
 class DescriptionTest(unittest.TestCase):
     def test_user_text_wins_over_readme(self):

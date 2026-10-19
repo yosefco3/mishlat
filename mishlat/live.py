@@ -23,6 +23,8 @@ class Live:
     name: str | None
     entrypoint: str | None
     started_at: int
+    status: str | None = None         # the registry knows no status; `agents.LiveEntry` has one
+    waiting_for: str | None = None
 
 
 def parse_proc_start(stat_text: str) -> str | None:

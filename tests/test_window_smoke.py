@@ -3,6 +3,7 @@ import unittest
 
 from tests.helpers import FakeHome
 from tests.test_model_index import D, NOW, build, folders, rec, tx
+from mishlat.live import Live
 from mishlat.model import DAY_MS
 from mishlat.transcripts import encode_path
 
@@ -16,7 +17,7 @@ def sample_index():
                   rec("local_q", book, "c2", title="תיקון פרק 4", status="blocked", question="איזה פתיח?"),
                   rec("local_old", book, "c3", title="ישן", last=NOW - 60 * DAY_MS)],
                  {"c1": tx(encode_path(shedu), last_write=NOW - 500, plan=working)},
-                 live={"c1": type("L", (), {"pid": 1})()},
+                 live={"c1": Live(1, "c1", "/w", None, None, 0)},
                  fi=folders(book, shedu), existing={book, shedu})
 
 

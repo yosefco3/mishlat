@@ -107,13 +107,17 @@ def work_project(tx: dict | None, own: str | None, candidates: list[str], by_nam
     return top
 
 
-def state_of(status: str | None, fresh: bool, alive: bool, tx: dict | None, now: int) -> str:
-    """working > stopped > waiting > review > open > idle."""
-    if alive and tx is not None and now - tx.get("last_write", 0) < WORKING_WINDOW_MS:
+def state_of(status: str | None, fresh: bool, alive: bool, tx: dict | None, now: int,
+             live_status: str | None = None) -> str:
+    """working > stopped > waiting > review > open > idle.
+    `live_status` is what `claude agents --json` says of a live session (busy / waiting / idle);
+    without it (the registry fallback) a transcript write in the last 90 s means working."""
+    if alive and (live_status == "busy" if live_status else
+                  tx is not None and now - tx.get("last_write", 0) < WORKING_WINDOW_MS):
         return "working"
     if tx is not None and tx.get("interrupted") and step_open(tx.get("plan") or []):
         return "stopped"
-    if fresh and status == "blocked":
+    if (alive and live_status == "waiting") or (fresh and status == "blocked"):
         return "waiting"
     if fresh and status == "review_ready":
         return "review"
@@ -148,7 +152,14 @@ def _session(rec, cli_id: str | None, tx: dict | None, live_entry, now: int, dis
     """One session row. `rec` is a store Record, or None for a terminal-only session."""
     alive = live_entry is not None
     status, fresh = (rec.status, rec.fresh) if rec else (None, True)
-    state = state_of(status, fresh, alive, tx, now)
+    live_status, waiting_for = (live_entry.status, live_entry.waiting_for) if alive else (None, None)
+    state = state_of(status, fresh, alive, tx, now, live_status)
+    # A waiting row's question: the store's, when its summary is for this turn and says blocked;
+    # else what the CLI says the session waits for ("permission prompt", "input needed", …).
+    question = None
+    if state == "waiting":
+        question = (rec.question or rec.detail) if (rec and rec.fresh and rec.status == "blocked") else None
+        question = question or waiting_for
     last = max(rec.last_activity if rec else 0, tx["last_write"] if tx else 0)
     step, done, total = plan_summary(tx["plan"]) if tx else (None, 0, 0)
     title = (rec.title if rec else "") or (tx or {}).get("title") or (tx or {}).get("name") \
@@ -166,7 +177,8 @@ def _session(rec, cli_id: str | None, tx: dict | None, live_entry, now: int, dis
         "cwd": rec.cwd if rec else ((tx or {}).get("cwd") or ""),
         "project": None,
         "state": state,
-        "question": (rec.question or rec.detail) if (rec and state == "waiting") else None,
+        "question": question,
+        "waiting_for": waiting_for if state == "waiting" else None,
         "detail": rec.detail if (rec and rec.fresh) else None,
         "step": step,
         "steps_done": done,
