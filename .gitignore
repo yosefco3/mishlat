@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.code-review-graph/
+scripts/test_history.json

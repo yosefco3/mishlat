@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Mishlat
+Name[he]=משלט
+GenericName=Claude sessions
+GenericName[he]=שיחות Claude
+Comment=Every project and its Claude Code sessions, and what waits for you
+Comment[he]=כל הפרויקטים ושיחות Claude שלהם, ומה מחכה לך
+Exec=@LAUNCHER@
+Icon=@ICONS@/mishlat.svg
+Terminal=false
+Categories=Development;Utility;
+Keywords=claude;sessions;projects;משלט;
+StartupNotify=false

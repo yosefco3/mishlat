@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Mishlat (tray)
+Name[he]=משלט (מגש)
+Comment=The Mishlat tray icon: Claude sessions that wait for you
+Exec=@LAUNCHER@ --tray
+Icon=@ICONS@/mishlat.svg
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=5
