@@ -4,8 +4,10 @@
 
 **Title:** Mishlat: a Linux desktop "control post" for your Claude Code sessions (open source, MIT)
 
-I had 170 Claude Code sessions in the desktop app's sidebar and could not tell which belonged to
-which project or which one was waiting for me. So I built Mishlat (Hebrew for "control post"):
+It started with a tidy-up. I moved my project folders around to organize my Desktop, and the
+desktop app's sidebar lost the thread: sessions stayed filed under the old paths, one project
+became three, and I had 170 Claude Code sessions I could not navigate or tell apart, let alone
+see which one was waiting for me. So I built Mishlat (Hebrew for "control post"):
 
 - one window, every project as a card with its sessions and their state (working / open /
   waiting for you / ready for review / stopped midway), and an attention column across projects;
