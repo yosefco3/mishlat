@@ -59,6 +59,7 @@ MANUAL_MAP: dict[str, list[str]] = {
     "tests/test_install.py": ["mishlat/__main__.py"],
     "tests/test_describe.py": ["mishlat/describe.py"],
     "tests/test_plugin.py": ["plugin/lib/mishlat_cli.py"],
+    "tests/test_identity.py": ["mishlat/folders.py", "mishlat/gitinfo.py"],
 }
 
 HISTORY_PATH = Path(__file__).resolve().parent / "test_history.json"

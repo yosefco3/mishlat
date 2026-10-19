@@ -13,7 +13,7 @@ from . import index as io
 from . import paths
 from .paths import version_key
 from .describe import ReadmeCache
-from .folders import FolderIndex, folder_index
+from .folders import FolderIndex, folder_index, identity
 from .gitinfo import is_dirty, read_branch
 from .live import read_live
 from .model import build_index, mark_cleanup
@@ -44,6 +44,7 @@ class Scanner:
         self.store = StoreReader()
         self.tx_cache = io.load_cache(home)
         self.readmes = ReadmeCache()
+        self.folder_memory = io.load_folder_memory(home)
         self._folders: tuple[float, tuple, FolderIndex] | None = None
         self._dirty: dict[str, tuple[float, bool | None]] = {}
 
@@ -54,6 +55,27 @@ class Scanner:
         idx = folder_index(roots)
         self._folders = (now, tuple(roots), idx)
         return idx
+
+    def remember(self, folders: FolderIndex, records) -> None:
+        """Record the identity of every folder that exists now: the index, and each session's folder."""
+        known = {f.path for f in folders.folders} | {r.cwd.rstrip("/") for r in records if r.cwd}
+        changed = False
+        for path in known:
+            if not os.path.isdir(path):
+                continue
+            ident = identity(path)
+            if ident is None:
+                continue
+            ident["seen"] = self.clock()
+            old = self.folder_memory.get(path)
+            if old is None or {k: old.get(k) for k in ("dev", "ino", "remote", "entries")} != \
+                    {k: ident[k] for k in ("dev", "ino", "remote", "entries")}:
+                self.folder_memory[path] = ident
+                changed = True
+            else:
+                old["seen"] = ident["seen"]
+        if changed:
+            io.save_folder_memory(self.home, self.folder_memory)
 
     def git(self, path: str) -> dict | None:
         branch = read_branch(path)
@@ -86,6 +108,7 @@ class Scanner:
         before = {p: (e["size"], e["mtime"]) for p, e in self.tx_cache.items()}
         transcripts = guarded("transcripts", lambda: index_transcripts(self.home, self.tx_cache), {})
         folders = guarded("folders", lambda: self.folders(settings["roots"]), FolderIndex([], settings["roots"]))
+        guarded("folder memory", lambda: self.remember(folders, records), None)
         aliases = guarded("aliases", lambda: io.load_aliases(self.home), {})
         dismissed = guarded("dismissed", lambda: io.load_dismissed(self.home), {})
         assignments = guarded("assignments", lambda: io.load_assignments(self.home), {})

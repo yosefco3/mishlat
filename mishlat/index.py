@@ -56,6 +56,20 @@ def save_cache(home: str, files: dict) -> None:
     write_json(paths.transcript_cache_path(home), {"version": CACHE_VERSION, "files": files})
 
 
+FOLDER_MEMORY_VERSION = 1
+
+
+def load_folder_memory(home: str) -> dict[str, dict]:
+    obj = read_json(paths.folder_memory_path(home))
+    if isinstance(obj, dict) and obj.get("version") == FOLDER_MEMORY_VERSION and isinstance(obj.get("folders"), dict):
+        return {k: v for k, v in obj["folders"].items() if isinstance(k, str) and isinstance(v, dict)}
+    return {}
+
+
+def save_folder_memory(home: str, folders: dict[str, dict]) -> None:
+    write_json(paths.folder_memory_path(home), {"version": FOLDER_MEMORY_VERSION, "folders": folders})
+
+
 def load_aliases(home: str) -> dict[str, str]:
     """{"/old/folder": "/new/folder"}: the user's answer for a folder Mishlat cannot find."""
     obj = read_json(paths.aliases_path(home), {})

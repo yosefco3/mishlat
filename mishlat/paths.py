@@ -36,6 +36,11 @@ def transcript_cache_path(home: str) -> str:
     return os.path.join(cache_dir(home), "transcripts.json")
 
 
+def folder_memory_path(home: str) -> str:
+    """{folder: identity}: every folder Mishlat saw, kept after it vanishes, to find it again."""
+    return os.path.join(cache_dir(home), "folders.json")
+
+
 def aliases_path(home: str) -> str:
     """Old folder path -> new folder path, written by the user for folders Mishlat cannot find."""
     return os.path.join(config_dir(home), "aliases.json")

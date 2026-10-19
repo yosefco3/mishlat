@@ -7,15 +7,46 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 
+from .gitinfo import remote_url
 from .transcripts import encode_path
 
 SKIP = {"node_modules", "__pycache__", "venv", "build", "dist", "target", "site-packages"}
+SAMPLE = 8  # top-level entry names remembered per folder, to tell a renamed folder from a recycled inode
 
 
 @dataclass(frozen=True)
 class Folder:
     path: str
     is_repo: bool
+    dev: int = 0
+    ino: int = 0
+
+
+def identity(path: str) -> dict | None:
+    """What stays the same when a folder is renamed or moved: its device+inode, its git remote,
+    and a sample of its top-level entry names. None when the folder cannot be read."""
+    try:
+        st = os.stat(path)
+        with os.scandir(path) as it:
+            names = sorted(e.name for e in it if not e.name.startswith("."))[:SAMPLE]
+    except OSError:
+        return None
+    return {"dev": st.st_dev, "ino": st.st_ino, "remote": remote_url(path), "entries": names}
+
+
+def same_folder(remembered: dict, candidate: str) -> bool:
+    """Is `candidate` the folder `remembered` describes, after a rename or a move?"""
+    now = identity(candidate)
+    if now is None:
+        return False
+    if remembered.get("remote") and now.get("remote") and remembered["remote"] != now["remote"]:
+        return False
+    if (now["dev"], now["ino"]) == (remembered.get("dev"), remembered.get("ino")):
+        old = set(remembered.get("entries") or [])
+        if not old:
+            return True
+        return bool(old & set(now["entries"]))  # a recycled inode holds other files
+    return bool(remembered.get("remote")) and remembered["remote"] == now.get("remote")
 
 
 class FolderIndex:
@@ -25,9 +56,19 @@ class FolderIndex:
         self._by_path = {f.path: f for f in folders}
         self._by_encoding: dict[str, list[str]] = defaultdict(list)
         self._by_base: dict[str, list[str]] = defaultdict(list)
+        self._by_ino: dict[tuple, list[str]] = defaultdict(list)
         for f in folders:
             self._by_encoding[encode_path(f.path)].append(f.path)
             self._by_base[encode_path(os.path.basename(f.path))].append(f.path)
+            if f.ino:
+                self._by_ino[(f.dev, f.ino)].append(f.path)
+
+    def by_identity(self, remembered: dict) -> str | None:
+        """The one indexed folder that is the remembered one, by inode (guarded) or by remote."""
+        hits = [p for p in self._by_ino.get((remembered.get("dev"), remembered.get("ino")), []) if same_folder(remembered, p)]
+        if not hits and remembered.get("remote"):
+            hits = [f.path for f in self.folders if f.is_repo and remote_url(f.path) == remembered["remote"]]
+        return hits[0] if len(hits) == 1 else None
 
     def at(self, path: str) -> Folder | None:
         return self._by_path.get(path)
@@ -64,7 +105,11 @@ def folder_index(roots: list[str], depth: int = 3) -> FolderIndex:
                     if not is_dir or e.name.startswith(".") or e.name in SKIP:
                         continue
                     is_repo = os.path.exists(os.path.join(e.path, ".git"))
-                    folders.append(Folder(e.path, is_repo))
+                    try:
+                        st = e.stat(follow_symlinks=False)
+                        folders.append(Folder(e.path, is_repo, st.st_dev, st.st_ino))
+                    except OSError:
+                        folders.append(Folder(e.path, is_repo))
                     if not is_repo:
                         nxt.append(e.path)
             level = nxt
