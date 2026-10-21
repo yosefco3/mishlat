@@ -42,6 +42,7 @@ CSS = b"""
 .mishlat-dim { opacity: 0.66; font-size: 0.92em; }
 .mishlat-question { color: #c98a10; }
 .mishlat-warn { color: #c98a10; font-size: 0.92em; }
+.mishlat-newtask { padding: 0 8px; min-height: 0; border-radius: 7px; color: @theme_selected_bg_color; font-weight: bold; }
 .mishlat-badge { background-color: alpha(@theme_fg_color, 0.08); border-radius: 7px; padding: 2px 9px;
                  font-size: 0.92em; }
 .mishlat-tag { background-color: alpha(@theme_fg_color, 0.09); border-radius: 6px; padding: 1px 7px;
@@ -160,6 +161,7 @@ class MishlatWindow(Gtk.ApplicationWindow):
         self.shown_cards: list[str] = []
         self.shown_sessions: list[str] = []
         self.side_sessions: list[str] = []
+        self.new_task_buttons: dict[str, Gtk.Button] = {}  # project key → its "+ New task" button
 
         self.set_default_size(1320, 840)
         header = Gtk.HeaderBar()
@@ -348,6 +350,7 @@ class MishlatWindow(Gtk.ApplicationWindow):
         vadj = self.main_scroll.get_vadjustment()
         keep = vadj.get_value()
         self.shown_cards, self.shown_sessions, self.side_sessions = [], [], []
+        self.new_task_buttons = {}
         _clear(self.side)
         _clear(self.main)
         self._update_status()
@@ -516,6 +519,14 @@ class MishlatWindow(Gtk.ApplicationWindow):
             lab = _label(markup=(f'<span foreground="{view.COLOR[state]}">{GLib.markup_escape_text(text)}</span>'
                                  if state else GLib.markup_escape_text(text)), css=("mishlat-badge",))
             badges.pack_start(lab, False, False, 0)
+        if p["path"]:
+            new_task = Gtk.Button(label=t("+ משימה חדשה"))
+            new_task.set_relief(Gtk.ReliefStyle.NONE)
+            new_task.get_style_context().add_class("mishlat-newtask")
+            new_task.set_tooltip_text(t("פותח שיחת Claude חדשה בתיקייה הזו, באפליקציה"))
+            new_task.connect("clicked", lambda *_, path=p["path"]: actions.new_session_in(path))
+            badges.pack_end(new_task, False, False, 0)
+            self.new_task_buttons[p["key"]] = new_task
         head_box.pack_start(badges, False, False, 2)
         head.add(head_box)
         tip = [t("לחיצה פותחת או מקפלת את רשימת השיחות · לחיצה ימנית לעוד פעולות")]
@@ -704,7 +715,7 @@ class MishlatWindow(Gtk.ApplicationWindow):
         menu = Gtk.Menu()
         if p["path"]:
             self._item(menu, t("פתח את התיקייה"), lambda: actions.open_folder(p["path"]))
-            self._item(menu, t("סשן Claude חדש כאן"), lambda: actions.new_session_in(p["path"]))
+            self._item(menu, t("משימה חדשה כאן"), lambda: actions.new_session_in(p["path"]))
             self._item(menu, t("העתק את הנתיב"), lambda: self._copy(p["path"]))
         self._item(menu, t("הצג רק את הפרויקט הזה"), lambda: self.show_project(p["path"] or p["key"]))
         if p["path"]:

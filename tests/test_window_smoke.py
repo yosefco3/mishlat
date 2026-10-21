@@ -48,6 +48,18 @@ class WindowSmokeTest(unittest.TestCase):
         self.assertEqual(self.w.side_sessions, ["local_q", "local_w"])  # waiting, then working
         self.assertIn("נסרק", self.w.status.get_text())
 
+    def test_new_task_button_on_folder_cards(self):
+        general = build([rec("local_g", f"{D}/gone", "c9", title="ללא תיקייה")], existing=set())
+        self.w.set_index(self.index)
+        self.assertEqual(set(self.w.new_task_buttons), {f"{D}/shedu", f"{D}/book"})
+        started = []
+        self.window.actions.new_session_in = lambda path: started.append(path)
+        self.w.new_task_buttons[f"{D}/book"].clicked()
+        self.assertEqual(started, [f"{D}/book"])
+        self.assertEqual(self.w.shown_cards, [f"{D}/shedu", f"{D}/book"])   # the click did not toggle the card
+        self.w.set_index(general)
+        self.assertEqual(self.w.new_task_buttons, {})                          # General has no folder
+
     def test_apply_settings_saves_and_rescans(self):
         import mishlat.index as io
         from mishlat.strings import EN
