@@ -31,6 +31,7 @@ keep on your disk. It never writes into their files and never sends anything any
 - **Search** over project names, paths, session titles, open questions, steps and first prompts.
 - **Click a row to open the session** in the Claude app; right-click to resume it in a terminal,
   open its folder, copy its id, assign it, or hide it.
+- **A New task button on every card** starts a new Claude session in that folder, in the app.
 - **A purpose line per folder** from its `README.md`, so an archive does not look like a live
   project; or write your own from the card's menu.
 - English or Hebrew UI (right-to-left), Ctrl+L to switch; Ctrl+= / Ctrl+- for the text size.
@@ -74,6 +75,7 @@ python3 -m mishlat
 | Show or hide the window | Super+Shift+C, the menu entry, or `mishlat` |
 | Open a session | click its row; right-click for more |
 | One folder only | right-click the folder in the file manager ▸ *Claude sessions of this folder…* |
+| Start a new session in a folder | the *+ New task* button on its card, or right-click the card |
 | Scan now | Ctrl+R, the ⟳ button, or the tray menu |
 | Search | type (Ctrl+F); Esc clears, a second Esc hides the window |
 | Sessions worth deleting | the *To delete (N)* chip; *Keep* or *Delete* per row, *Approve all* |

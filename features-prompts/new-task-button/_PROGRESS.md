@@ -25,9 +25,9 @@ hidden behind the card's right-click menu.
 4. `MISHLAT_LANG=en mishlat` ⇒ the button reads "+ New task".
 5. `python3 -m pytest -q` ⇒ green.
 
-## ⏳ Pending (1/2 completed):
+## ✅ Pending (2/2 completed):
 1. ✅ `01_button.md` — the button on the card, the renamed menu item, English strings; smoke test.
-2. `02_release.md` — README, APP_OVERVIEW, version 0.1.4, plugin sync, graphs, local install.
+2. ✅ `02_release.md` — README, APP_OVERVIEW, version 0.1.4, plugin sync, graphs, local install.
 
 > כל צעד עצמאי, נוגע ב-2-4 קבצים, עם טסטים, ו-commit נפרד.
 > Each step is independent, touches 2–4 files, has tests, and its own commit.
